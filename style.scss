@@ -1,0 +1,52 @@
+html {
+    background-color: #C1C1CA;
+    font-family: 'Source Sans Pro Light', sans-serif;
+    body {
+        margin: 0;
+        height: 100vh;
+    }
+    h1 {
+        margin-bottom: 5px;
+    }
+    h2 {
+        margin-top: 5px;
+    }
+
+    div#game {
+        display: block;
+        width: 663px;
+        margin: auto;
+        background-color: #FDFDFD;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.17);
+        padding: 15px 30px;
+        height: 100%;
+        box-sizing: border-box;
+        #board{
+            display: inline-block;
+            line-height: 0px;
+            .cell{
+                border-radius: 1px;
+                padding: 0;
+                margin: 0;
+                display: inline-block;
+            }
+        }
+    }
+
+    
+    div#score {
+        width: 30%;
+        display: inline-block;
+        margin-left: 10px;
+        vertical-align: top;
+        h3 {
+            display: inline-block;
+        }
+        p#score-count {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+    }
+}
+
