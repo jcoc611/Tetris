@@ -1,0 +1,29 @@
+{
+  "name": "tetris",
+  "version": "1.0.0",
+  "description": "The classic in ES6 JS",
+  "main": "index.html",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "tetris",
+    "js",
+    "jcoc611",
+    "es6",
+    "modern"
+  ],
+  "author": "jcoc611",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.2.1",
+    "babel-loader": "^6.2.0",
+    "babel-preset-es2015": "^6.1.18",
+    "bower-webpack-plugin": "^0.1.9",
+    "css-loader": "^0.23.0",
+    "node-sass": "^3.4.2",
+    "sass-loader": "^3.1.1",
+    "style-loader": "^0.13.0",
+    "webpack": "^1.12.8"
+  }
+}

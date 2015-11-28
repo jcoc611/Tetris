@@ -72,7 +72,7 @@ jQuery(function($){
 	//'''''''''''''''''''''''''''''''''''''''
 	// Classes
 	//,,,,,,,,,,,,,,,,,,,,,,,,
-	function cell(x, y){
+	function Cell(x, y){
 		/*
 
 		Represents a single cell in the board.
@@ -92,8 +92,8 @@ jQuery(function($){
 		*/
 		this.color = COLORS["DEFAULT"];
 		this.resolved = true;
-		this.x = x;
-		this.y = y;
+		this.x = x || 0;
+		this.y = y || 0;
 		this.shape = null;
 
 		// READ
@@ -113,7 +113,7 @@ jQuery(function($){
 		}
 	}
 
-	function shape(options){
+	function Shape(options){
 		/*
 
 		Represents a collection of
@@ -129,7 +129,7 @@ jQuery(function($){
 				within the board.
 
 		*/
-		if(instanceof(options, cell)){
+		if(options instanceof Cell){
 			this.x = options.x - options.shape.x;
 			this.x = options.shape.y;
 		}else{
@@ -149,13 +149,6 @@ jQuery(function($){
 				map[dy + y2][dx + x2].resolved = true;
 			}, false, shape);
 		};
-		this.unresolve = function(){
-			loop(function(x, y){
-				var cell = get(x, y);
-				if(cell.shape !== null) cell.resolved = false;
-				else cell.resolved = true;
-			});
-		}
 
 		this.pullShape = function(x, y, direction){
 			/* (int, int, str)
@@ -213,15 +206,14 @@ jQuery(function($){
 		}
 	};
 
-	function board(){
+	function Board(w, h){
 		var self = this;
 		this.queueColor = "#000";
 		this.colorIndex = 0;
-		this.map = [];
 
 		// Settings
-		this.width = 20;
-		this.height = 30;
+		this.width = w || 20;
+		this.height = h || 30;
 		this.cell_size = 20;
 
 		this.nextColor = function(){
@@ -250,18 +242,22 @@ jQuery(function($){
 			return flag;
 		};
 
+		this.unresolve = function(){
+			this.cells.each(function(cell){
+				if(!cell.isEmpty()) cell.resolved = false;
+				else cell.resolved = true;
+			});
+		};
+
 		this.step = function(){
 			// Check if line is full, delete it
-			var lastLine = map[map.length - 1] || [], f = true;
+			var lastLine = this.cells.last(), f = true;
 
-			for(var z = 0; z < lastLine.length; z++){
-				f &= lastLine[z];
-			}
+			lastLine.each(function(cell){
+				f &= cell.isEmpty();
+			});
 
-			if(f){
-				map.pop();
-				map.shift([]);
-			}
+			if(f) this.cells.shift();
 
 			// Gravity
 			unresolve();
@@ -290,12 +286,40 @@ jQuery(function($){
 				if(!row) return false;
 				return row[x] || false;
 			},
+			set: function(x, y, val){
+				if(Array.isArray(x)){
+					this.data[0] = _.clone(x);
+				}else{
+					if(!this.data[y]) this.data[y] = [];
+					this.data[y][x] = val;
+				}
+			},
+			shift: function(){
+				this.data.pop();
+
+				var nl = [];
+				for(var z = 0; z < self.width; z++){
+					nl.push(new Cell());
+				}
+				this.data.shift(nl);
+			},
 			each: function(callback, backwards){
 				var self = this;
 				loop(function(){
-					var cell = self.get(x, y);;
+					var cell = self.get(x, y);
 					callback(cell);
 				}, backwards, this.data);
+			},
+			last: function(){
+				var c = [];
+				
+				if(this.data.length)
+					c = this.data[this.data.length - 1];
+				
+				var bm = new Board(c.length, 1);
+				bm.cells.set(c);
+
+				return bm.cells;
 			}
 		};
 
@@ -318,7 +342,7 @@ jQuery(function($){
 		};
 
 		this.shape = {
-			add: function(){
+			add: function(shape){
 				/*
 
 				Enqueue shape with id to board.
@@ -327,24 +351,10 @@ jQuery(function($){
 					- Clears shape queue. (Only one shape in queue).
 
 				*/
+				
 				this.nextColor();
 				this.clearQueue();
-
 				this.queue.fill(shape);
-				
-				loop(function(x, y){
-					if(!queue[y]) queue[y] = [];
-
-					if(shape[y][x]){
-						queue[y][x + offset] = {
-							color: queueColor,
-							shape: id,
-							shape_x: x,
-							shape_y: y,
-							resolved: false
-						}
-					}else queue[y][x + offset] = EMPTY_CELL;
-				}, false, shape);
 			},
 			active: function(){
 				/* () -> [int x, int y]
@@ -355,10 +365,10 @@ jQuery(function($){
 				*/
 				var rx = null, ry = null;
 
-				loop(function(x, y){
-					if(!isEmpty(x, y) && isEmpty(x, y + 1)){
-						rx = x;
-						ry = y;
+				self.cells.each(function(cell){
+					if(!cell.isEmpty() && cell.below().isEmpty()){
+						rx = cell.x;
+						ry = cell.y;
 						return false;
 					}
 					return true;
@@ -461,15 +471,15 @@ jQuery(function($){
 		};
 	};
 
-	window.addShape = addShape;
-	window.on = on;
-	window.off = off;
-	window.isEmpty = isEmpty;
-	window.loop = loop;
-	window.get = get;
-	window.set = set;
-	window.pullShape = pullShape;
-	window.getActiveShape = getActiveShape;
+	// window.addShape = addShape;
+	// window.on = on;
+	// window.off = off;
+	// window.isEmpty = isEmpty;
+	// window.loop = loop;
+	// window.get = get;
+	// window.set = set;
+	// window.pullShape = pullShape;
+	// window.getActiveShape = getActiveShape;
 });
 
 // TFIN

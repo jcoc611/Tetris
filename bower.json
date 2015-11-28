@@ -1,0 +1,30 @@
+{
+  "name": "tetris",
+  "description": "The classic in ES6 JS",
+  "main": "index.html",
+  "authors": [
+    "jcoc611"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "tetris",
+    "js",
+    "jcoc611",
+    "es6",
+    "modern"
+  ],
+  "moduleType": [],
+  "homepage": "http://lab.jcoc611.com/games/tetris",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "underscore": "~1.8.3"
+  }
+}
