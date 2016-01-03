@@ -11,6 +11,20 @@ class CellGrid {
 	constructor(){
 		this.cells = [];
 	}
+
+	/**
+	 * Describes a rotation in a clockwise direction.
+	 */
+	static get CLOCKWISE(){
+		return 1;
+	} 
+
+	/**
+	 * Describes a rotation in a counter-clockwise direction.
+	 */
+	static get COUNTER_CLOCKWISE(){
+		return 2;
+	}
 	
 	/**
 	 * Returns the cell at a given position.
@@ -41,7 +55,7 @@ class CellGrid {
 	 * @param {Cell} cell The new contents of this coordinates.
 	 */
 	set(x, y, cell){
-		if(!cell instanceof Cell) throw new Error("ass");
+		if(!cell instanceof Cell) throw new Error("Must be a cell!");
 		if(!this.cells[y]) this.cells[y] = [];
 		this.cells[y][x] = cell;
 	}
@@ -171,6 +185,65 @@ class CellGrid {
 	}
 
 	/**
+	 * Rotates this grid in a given direction.
+	 * @param  {int} direction the direction in which to rotate this grid.
+	 */
+	rotate(direction){
+		var newCells = [];
+
+		// Cant rotate emptiness
+		if(this.height == 0 || this.width == 0) return;
+
+		switch(direction){
+			case CellGrid.CLOCKWISE:
+				// The origin x and y
+				var ox, oy;
+
+				for(let i = 0; i < this.width; i++){
+					newCells[i] = [];
+
+					for(let k = this.height - 1; k >= 0; k--){
+						var cell = this.get(i, k);
+						if(cell){
+							if(!ox){
+								ox = cell.shape.x;
+								oy = cell.shape.y;
+							}
+							cell.move(ox - k + this.height - 1, oy + i);
+						}
+						newCells[i].push(cell);
+					}
+				}
+				break;
+			case CellGrid.COUNTER_CLOCKWISE:
+				// The origin x and y
+				var ox, oy;
+
+				for(let i = this.width - 1; i >= 0; i--){
+					var y = this.width - 1 - i;
+					newCells[y] = [];
+
+					for(let k = 0; k < this.height; k++){
+						var cell = this.get(i, k);
+						if(cell){
+							if(!ox){
+								ox = cell.shape.x;
+								oy = cell.shape.y;
+							}
+							cell.move(ox + k, oy + y);
+						}
+						newCells[y].push(cell);
+					}
+				}
+				break;
+			default:
+				throw new Error("Unknown direction: "+direction);
+		}
+
+		this.cells = newCells;
+	}
+
+	/**
 	 * Returns the height of this grid.
 	 * @return {int} the height of this grid.
 	 */
@@ -188,33 +261,36 @@ class CellGrid {
 	}
 
 	/**
-	 * An iterator of each row in this cell grid.
+	 * An iterator of each cell in this cell grid, iterating over columns first,
+	 * then by rows.
 	 */
 	[Symbol.iterator]() {
 		let cx = -1, cy = 0;
 		let self = this;
 		return {
 			next() {
-				var done = false;
+				var done = false, val;
 				// Check size
 				if(!self.cells.length){
 					return { done: true, value: null };
 				}
 
-				// Iterate through cols first.
-				if(cx + 1 == self.cells[cy].length){
-					cx = 0;
-					cy++;
-				}else{
-					cx++;
-				}
+				// Skips null values (non-shape cells)
+				while(!done && !val){
+					// Iterate through cols first.
+					if(cx + 1 == self.cells[cy].length){
+						cx = 0;
+						cy++;
+					}else{
+						cx++;
+					}
 
-				// Check done condition
-				if(cy == self.cells.length){
-					done = true;
+					// Check done condition
+					if(cy == self.cells.length){
+						done = true;
+					}
+					val = self.get(cx, cy);
 				}
-				var val = self.get(cx, cy);
-				if(val === null) done = true;
 
 				return { done: done, value: val };
 			}

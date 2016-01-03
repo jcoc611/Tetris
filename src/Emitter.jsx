@@ -18,7 +18,7 @@ class Emitter {
 	on(event, handler){
 		if(!this._handlers[event]) this._handlers[event] = [];
 
-		this._handlers[event].push(handler);
+		this._handlers[event].push(handler.bind(this));
 	}
 
 	/**

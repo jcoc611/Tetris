@@ -1,4 +1,4 @@
-import {COLORS} from './constants.jsx';
+import {DEFAULT_COLOR} from './constants.jsx';
 
 /**
  * A single cell in a board.
@@ -11,7 +11,7 @@ class Cell {
 	 * @constructor
 	 */
 	constructor(x, y){
-		this.color = COLORS["DEFAULT"];
+		this.color = DEFAULT_COLOR;
 		this.resolved = true;
 		this.shape = null;
 		this.x = x;
@@ -32,7 +32,7 @@ class Cell {
 	clear(){
 		this.shape = null;
 		this.resolved = true;
-		this.color = COLORS["DEFAULT"];
+		this.color = DEFAULT_COLOR;
 		return this;
 	}
 
@@ -47,10 +47,21 @@ class Cell {
 	 * Sets the position of this cell.
 	 * @param  {int} x The new x coordinate of this cell.
 	 * @param  {int} y The new y coordinate of this cell.
+	 * @returns {Cell} itself, for chaining.
 	 */
 	move(x, y){
 		this.x = x;
 		this.y = y;
+		return this;
+	}
+
+	clone(newShape){
+		var newCell = new Cell(this.x, this.y);
+
+		newCell.color = this.color;
+		newCell.shape = newShape || this;
+		
+		return newCell;
 	}
 }
 

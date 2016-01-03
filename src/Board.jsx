@@ -1,4 +1,4 @@
-import {COLORS, COLOR_KEYS, SHAPES} from './constants.jsx';
+import {COLORS, SHAPES} from './constants.jsx';
 import CellGrid from './CellGrid.jsx';
 import Emitter from './Emitter.jsx';
 import Shape from './Shape.jsx';
@@ -38,8 +38,11 @@ class Board extends Emitter {
 		// Handlers
 		this.on("left", this.moveLeft);
 		this.on("right", this.moveRight);
-		this.on("down", this.moveBottom);
+		this.on("down", this.rotateCounterclockwise);
+		this.on("up", this.rotateClockwise);
+
 		this.on("add", this.handleAdd);
+
 	}
 
 	/**
@@ -47,13 +50,11 @@ class Board extends Emitter {
 	 * @return {String} next color in #RRGGBB format.
 	 */
 	nextColor(){
-		if(this.colorIndex == COLOR_KEYS.length){
+		if(this.colorIndex + 1 == COLORS.length){
 			this.colorIndex = 0;
 		}else this.colorIndex++;
 
-		if(COLOR_KEYS[this.colorIndex] == "DEFAULT"){
-			return this.nextColor();
-		}else return COLORS[COLOR_KEYS[this.colorIndex]];
+		return COLORS[this.colorIndex];
 	}
 
 	/**
@@ -69,10 +70,8 @@ class Board extends Emitter {
 			if(cell.resolved) continue;
 			if(cell.isEmpty()) continue;
 
-			// if(this.isActiveShape(cell.shape)){
-				this.move(cell.shape, "down");
-				flag = false;
-			// }else cell.shape.resolve();
+			this.move(cell.shape, "down");
+			flag = false;
 		}
 		
 		// Process board
@@ -120,8 +119,21 @@ class Board extends Emitter {
 		else return this.cells.get(x, y);
 	}
 
+	set(x, y, cell){
+		if(y < 0) return this.queue.set(
+			x,
+			this.queue.height + y,
+			cell
+		);
+		else return this.cells.set(
+			x,
+			y,
+			cell
+		);
+	}
+
 	handleAdd(){
-		var sh = new Shape(SHAPES[1], this.nextColor());
+		var sh = Shape.fromScheme(SHAPES[2], this.nextColor());
 		sh.move(0, -sh.height);
 		this.addShape(sh);
 	}
@@ -131,77 +143,40 @@ class Board extends Emitter {
 	 * @param {Shape} shape The shape to be enqueued.
 	 */
 	addShape(shape){
-		shape.on("move", this.shapeMoved.bind(this));
+		shape.on("change", this.shapeChanged.bind(this));
 
-		// shape.color = this.nextColor();
 		this.queue.clear();
 		this.queue.addShape(shape);
 	}
 
-	/**
-	 * Clears the cells that match a shape scheme at given coordinates.
-	 * @param  {int} x   The x coordinate of the shape scheme.
-	 * @param  {int} y   The y coordinate of the shape scheme.
-	 * @param  {boolean[][]} sheme A 2d boolean shape scheme.
-	 */
-	deleteScheme(x, y, scheme){
-		for(let i = 0; i < scheme.length; i++){
-			for(let k = 0; k < scheme[i].length; k++){
-				if(!scheme[i][k]) continue;
-				if(y + i < 0){
-					console.log("deleting queue ("+(x + k)+","+(this.queue.height + y + i)+")");
-					this.queue.set(x + k,
-						this.queue.height + y + i,
-						new Cell(x + k, y + i));
-				}else{
-					console.log("deleting cell ("+(x + k)+","+(this.queue.height + y + i)+")");
-					this.cells.set(x + k, y + i,
-						new Cell(x + k, y + i));
-				}
-			}
+	deleteShape(shape){
+		for(let cell of shape.cells){
+			this.set(cell.x, cell.y, new Cell(cell.x, cell.y));
+		}
+	}
+
+	addShapeCool(shape){
+		for(let cell of shape.cells){
+			this.set(cell.x, cell.y, cell);
 		}
 	}
 
 	/**
-	 * Adds the cells of a shape to the board.
-	 * @param {Shape} shape The shape whose cells will be added.
-	 */
-	addShapeCells(shape){
-		var scheme = shape.scheme;
-		var cells = shape.cells;
-		var x = shape.x;
-		var y = shape.y;
-
-		for(let i = 0; i < scheme.length; i++){
-			for(let k = 0; k < scheme[i].length; k++){
-				if(!scheme[i][k]) continue;
-				if(y + i < 0){
-					this.queue.set(x + k,
-						this.queue.height + y + i,
-						cells.get(k, i));
-				}else{
-					this.cells.set(x + k, y + i,
-						cells.get(k, i));
-				}
-			}
-		}
-	}
-
-	/**
-	 * Handles the movement of a shape.
-	 * @param  {Shape} shape The shape that was moved.
+	 * Handles the mutation of a shape.
+	 * @param  {Shape} shape The shape that changed.
 	 * @param  {int} ox  The original x coordinate of the shape.
 	 * @param  {int} oy  The original y coordinate of the shape.
 	 * @param  {int} nx  The new x coordinate of the shape.
 	 * @param  {int} ny  The new y coordinate of the shape.
 	 */
-	shapeMoved(shape, ox, oy, nx, ny){
+	shapeChanged(old, newShape){
 		// Shape has moved from (ox, oy) to (nx, ny)
 		// Delete shape at (ox, oy).
-		this.deleteScheme(ox, oy, shape.scheme);
+		// this.deleteScheme(old.x, old.y, newShape.scheme);
+		this.deleteShape(old);
 
 		// Add shape at (nx, ny)
-		this.addShapeCells(shape);
+		this.addShapeCool(newShape);
 	}
 
 	/**
@@ -232,15 +207,16 @@ class Board extends Emitter {
 		// Resolve shape if it cannot fall
 		// Left bound
 		if(shape.x + dx < 0){
-			return;
+			return false;
 		}
 		// Right bound
 		if(shape.x + dx + shape.width > this.width){
-			return;
+			return false;
 		}
 		// Bottom bound
 		if(shape.y + dy + shape.height > this.height){
-			return shape.resolve();
+			shape.resolve();
+			return false;
 		}
 
 		for(let cell of shape.cells){
@@ -251,12 +227,16 @@ class Board extends Emitter {
 			var dcell = this.get(cell.x + dx, cell.y + dy);
 
 			if(!dcell || dcell.shape == shape) continue;
-			if(!dcell.isEmpty()) return shape.resolve();
+			if(!dcell.isEmpty()){
+				shape.resolve();
+				return false;
+			}
 		}
 
 		// Move
 		shape.move(shape.x + dx, shape.y + dy);
 		shape.resolve();
+		return true;
 	}
 
 	/**
@@ -313,6 +293,7 @@ class Board extends Emitter {
 	moveLeft(){
 		if(!this.activeShape) return;
 		this.move(this.activeShape, "left");
+		this.emit("change");
 	}
 
 	/**
@@ -322,6 +303,7 @@ class Board extends Emitter {
 	moveRight(){
 		if(!this.activeShape) return;
 		this.move(this.activeShape, "right");
+		this.emit("change");
 	}
 
 	/**
@@ -336,6 +318,16 @@ class Board extends Emitter {
 			this.unresolve();
 			this.resolve();
 		}
+	}
+
+	rotateCounterclockwise(){
+		if(!this.activeShape) return;
+		this.activeShape.rotate(CellGrid.COUNTER_CLOCKWISE);
+	}
+
+	rotateClockwise(){
+		if(!this.activeShape) return;
+		this.activeShape.rotate(CellGrid.CLOCKWISE);
 	}
 }
 

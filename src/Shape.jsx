@@ -14,30 +14,37 @@ class Shape extends Emitter {
 	 *                            represents an empty cell.
 	 * @constructor
 	 */
-	constructor(scheme, color){
+	constructor(color){
 		super();
 
 		this.cells = new CellGrid();
-		this.scheme = scheme;
 		this.color = color;
 		this.x = 0;
 		this.y = 0;
+	}
+
+	static fromScheme(scheme, color){
+		var shape = new Shape(color);
 
 		// Initialize the cells
 		for(let i = 0; i < scheme.length; i++){
 			for(let k = 0; k < scheme[i].length; k++){
 				var cell;
 				
-				cell = new Cell(k, i);
+				
 				if(scheme[i][k]){
-					cell.shape = this;
+					cell = new Cell(k, i);
+					cell.shape = shape;
 					cell.color = color;
 					cell.resolved = false;
+					shape.cells.set(k, i, cell);
 				}
 
-				this.cells.set(k, i, cell);
+				
 			}
 		}
+
+		return shape;
 	}
 
 	/**
@@ -46,10 +53,8 @@ class Shape extends Emitter {
 	 * @return {Shape} A clone of the shape to which the cell belongs.
 	 */
 	static fromCell(cell){
-		shape = cell.shape.clone();
-		return shape;
-	}
-	
+		return cell.shape.clone();
+	}	
 
 	/**
 	 * Marks all the cells in this shape as resolved.
@@ -67,7 +72,9 @@ class Shape extends Emitter {
 	 * @param  {int} x The new x coordinate.
 	 * @param  {int} y The new y coordinate.
 	 */
-	move(x, y){
+	move(x, y, flag){
+		if(!flag) var old = this.clone();
+		
 		var dx = x - this.x,
 			dy = y - this.y; 
 
@@ -76,10 +83,9 @@ class Shape extends Emitter {
 
 		for(let cell of this.cells){
 			cell.move(cell.x + dx, cell.y + dy);
-			console.log(cell.x, cell.y);
 		}
 
-		this.emit("move", this, x - dx, y - dy, x, y);
+		if(!flag)  this.emit("change", old, this);
 	}
 
 	/**
@@ -88,9 +94,28 @@ class Shape extends Emitter {
 	 *                   attributes as this shape.
 	 */
 	clone(){
-		var shape =  new Shape(this.scheme, this.color);
-		shape.move(this.x, this.y);
+		// Copy meta to new shape
+		var shape =  new Shape(this.color);
+		shape.x = this.x;
+		shape.y = this.y;
+
+		// Clone each cell
+		for(let cell of this.cells){
+			shape.cells.set(
+				cell.x - shape.x,
+				cell.y - shape.y,
+				cell.clone(shape)
+			);
+		}
+
 		return shape;
+	}
+
+	rotate(direction){
+		var old = this.clone();
+
+		this.cells.rotate(direction);
+		this.emit("change", old, this);
 	}
 
 	/**

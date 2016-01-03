@@ -1,4 +1,4 @@
-import {CELL_SIZE} from './constants.jsx';
+import {CELL_SIZE, CELL_MARGIN} from './constants.jsx';
 
 /**
  * A Tetris game user interface.
@@ -11,6 +11,8 @@ class Interface {
 	 */
 	constructor(board){
 		this._board = board;
+		board.on("change", this.redraw.bind(this));
+
 		this._interval = null;
 		this.time = 300;
 	}
@@ -20,21 +22,25 @@ class Interface {
 	 */
 	start(){
 		var board = this._board;
+		var $b = $("#board");
 
-		$("#board").css({
+		$b.css({
 			width: CELL_SIZE * board.width,
 			height: CELL_SIZE * board.height
 		});
 
 		for(let cell of board.cells){
-			$("#board").append(
-				"<span style='width:"
-				+ CELL_SIZE
-				+ "px;height:"
-				+ CELL_SIZE
-				+ "px' class='cell' id='cell_"
-				+ cell.y + "_"  + cell.x + "'>"
-			);
+			var $cell = $("<span>");
+
+			$cell.attr("id", "cell_" + cell.y + "_"  + cell.x)
+				.addClass("cell")
+				.css({
+					width: CELL_SIZE - 2*CELL_MARGIN,
+					height: CELL_SIZE - 2*CELL_MARGIN,
+					margin: CELL_MARGIN
+				});
+
+			$b.append($cell	);
 		}
 
 		$("body").on("keyup", function(e){
@@ -51,6 +57,9 @@ class Interface {
 				case 39:
 					board.emit("right");
 					break;
+				case 38:
+					board.emit("up");
+					break;
 			}
 		});
 
@@ -65,6 +74,10 @@ class Interface {
 	step(){
 		this._board.step();
 		
+		this.redraw();
+	}
+
+	redraw(){
 		// Draw
 		for(let cell of this._board.cells){
 			$("#cell_" + cell.y + "_" + cell.x).css({
