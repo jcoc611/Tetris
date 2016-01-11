@@ -1,4 +1,4 @@
-import {COLORS, SHAPES} from './constants.jsx';
+import {COLORS, GHOST_COLOR, SHAPES, LOCK_TIMEOUT} from './constants.jsx';
 import CellGrid from './CellGrid.jsx';
 import Emitter from './Emitter.jsx';
 import Shape from './Shape.jsx';
@@ -28,6 +28,12 @@ class Board extends Emitter {
 		this.cells = new CellGrid();
 		this.queue = new CellGrid();
 
+		// Shapes
+		this._ghostShape = null;
+		this._activeShape = null;
+
+		this.lockTimeout = null;
+
 		// Initialize cells
 		for(let i = 0; i < h; i++){
 			for(let k = 0; k < w; k++){
@@ -41,7 +47,7 @@ class Board extends Emitter {
 		this.on("down", this.rotateCounterclockwise);
 		this.on("up", this.rotateClockwise);
 
-		this.on("add", this.handleAdd);
+		this.on("add", this.moveBottom);
 
 	}
 
@@ -69,6 +75,7 @@ class Board extends Emitter {
 		for(let cell of this.queue){
 			if(cell.resolved) continue;
 			if(cell.isEmpty()) continue;
+			if(cell.shape == this._ghostShape) continue;
 
 			this.move(cell.shape, "down");
 			flag = false;
@@ -78,6 +85,7 @@ class Board extends Emitter {
 		for(let cell of this.cells){
 			if(cell.resolved) continue;
 			if(cell.isEmpty()) continue;
+			if(cell.shape == this._ghostShape) continue;
 			
 			if(this.isActiveShape(cell.shape)){
 				this.move(cell.shape, "down");
@@ -104,6 +112,13 @@ class Board extends Emitter {
 		// Gravity
 		this.unresolve();
 		this.resolve();
+
+		if(this.lockTimeout == null
+			&& this.activeShape
+			&& !this.isActiveShape(this.activeShape)) this.resetActiveLock();
+
+		// If there is no active shape, add a new one.
+		if(!this.activeShape) this.insertShape();
 	}
 
 	/**
@@ -132,9 +147,17 @@ class Board extends Emitter {
 		);
 	}
 
-	handleAdd(){
-		var sh = Shape.fromScheme(SHAPES[2], this.nextColor());
+	getRandomInt(min, max) {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
+	insertShape(){
+		var rand = this.getRandomInt(0, 6);
+		var sh = Shape.fromScheme(SHAPES[rand], this.nextColor());
+
 		sh.move(0, -sh.height);
+		this._activeShape = sh;
+
 		this.addShape(sh);
 	}
 
@@ -170,13 +193,43 @@ class Board extends Emitter {
 	 * @param  {int} ny  The new y coordinate of the shape.
 	 */
 	shapeChanged(old, newShape){
+		// Ignore ghost
+		if(newShape == this._ghostShape) return;
+
 		// Shape has moved from (ox, oy) to (nx, ny)
 		// Delete shape at (ox, oy).
-		// this.deleteScheme(old.x, old.y, newShape.scheme);
 		this.deleteShape(old);
 
 		// Add shape at (nx, ny)
 		this.addShapeCool(newShape);
+
+		// If this active den update ghost
+		if(this.activeShape == newShape){
+			this.updateGhost();
+		}
+	}
+
+	updateGhost(){
+		if(!this.activeShape) return;
+
+		if(this._ghostShape){
+			this.deleteShape(this._ghostShape);
+		}
+
+		var active = this.activeShape,
+			ghost = active.clone();
+
+		this.deleteShape(active);
+
+		ghost.color = GHOST_COLOR;
+		if(ghost.y < 0) ghost.move(ghost.x, 0, true);
+
+		while(this.move(ghost, "down")){}
+
+		this._ghostShape = ghost;
+		this.addShapeCool(this._ghostShape);
+
+		this.addShapeCool(active);
 	}
 
 	/**
@@ -205,28 +258,32 @@ class Board extends Emitter {
 
 		// Check that shape can be moved
 		// Resolve shape if it cannot fall
-		// Left bound
-		if(shape.x + dx < 0){
-			return false;
-		}
-		// Right bound
-		if(shape.x + dx + shape.width > this.width){
-			return false;
-		}
-		// Bottom bound
-		if(shape.y + dy + shape.height > this.height){
-			shape.resolve();
-			return false;
-		}
-
+		
 		for(let cell of shape.cells){
 			if(cell.isEmpty()) continue;
+
+			// Left bound
+			if(cell.x + dx < 0){
+				return false;
+			}
+
+			// Right bound
+			if(cell.x + dx >= this.width){
+				return false;
+			}
+
+			// Bottom bound
+			if(cell.y + dy >= this.height){
+				shape.resolve();
+				return false;
+			}
 
 			// Cell located at (cell.x + dx, cell.y + dy)
 			// must either be empty or belong to this shape
 			var dcell = this.get(cell.x + dx, cell.y + dy);
 
-			if(!dcell || dcell.shape == shape) continue;
+			if(!dcell || dcell.shape == shape
+				|| dcell.shape == this._ghostShape) continue;
 			if(!dcell.isEmpty()){
 				shape.resolve();
 				return false;
@@ -247,22 +304,32 @@ class Board extends Emitter {
 	 * the given shape from falling. False otherwise.
 	 */
 	isActiveShape(shape){
-		// Bottom bound
-		if(shape.y + 1 + shape.height > this.height){
-			return false;
-		}
 
 		for(let cell of shape.cells){
 			if(cell.isEmpty()) continue;
+
+			// Bottom bound
+			if(cell.y + 1 >= this.height){
+				return false;
+			}
 
 			// Cell located at (cell.x, cell.y + 1)
 			// must either be empty or belong to this shape
 			var dcell = this.get(cell.x, cell.y + 1);
 
-			if(!dcell || dcell.shape == shape) continue;
+			if(!dcell || dcell.shape == shape
+				|| dcell.shape == this._ghostShape) continue;
 			if(!dcell.isEmpty()) return false;
 		}
 		return true;
+	}
+
+	resetActiveLock(){
+		var self = this;
+		if(this.lockTimeout !== null) clearTimeout(this.lockTimeout);
+		this.lockTimeout = setTimeout(function(){
+			self.deactivateShape();
+		}, LOCK_TIMEOUT);
 	}
 
 	/**
@@ -270,20 +337,7 @@ class Board extends Emitter {
 	 * @return {Shape} currently falling shape.
 	 */
 	get activeShape(){
-		for(let cell of this.queue){
-			if(cell.isEmpty()) continue;
-
-			if(this.isActiveShape(cell.shape)){
-				return cell.shape;
-			}
-		}
-		for(let cell of this.cells){
-			if(cell.isEmpty()) continue;
-
-			if(this.isActiveShape(cell.shape)){
-				return cell.shape;
-			}
-		}
+		return this._activeShape;
 	}
 
 	/**
@@ -293,6 +347,7 @@ class Board extends Emitter {
 	moveLeft(){
 		if(!this.activeShape) return;
 		this.move(this.activeShape, "left");
+		if(this.lockTimeout !== null) this.resetActiveLock();
 		this.emit("change");
 	}
 
@@ -303,7 +358,40 @@ class Board extends Emitter {
 	moveRight(){
 		if(!this.activeShape) return;
 		this.move(this.activeShape, "right");
+		if(this.lockTimeout !== null) this.resetActiveLock();
 		this.emit("change");
+	}
+
+	get emptyLines(){
+		var lines = [];
+
+		for(let row = 0; row < this.cells.height; row++){
+			// Check if full
+			var full = true;
+			for(let col = 0; col < this.cells.width; col++){
+				var cell = this.cells.get(col, row);
+				if(!cell || cell.isEmpty()
+					|| cell.shape = this._ghostShape){
+					full = false;
+					break;
+				}
+			}
+			if(full) lines.push(row);
+		}
+
+		return lines;
+	}
+
+	clearLines(lines){
+		for(var z = 0; z < lines.length; z++){
+			var shapes = new Set();
+		}
+	}
+
+	deactivateShape(){
+		this.lockTimeout = null;
+		this._activeShape = null;
+		this._ghostShape = null;
 	}
 
 	/**
@@ -314,20 +402,25 @@ class Board extends Emitter {
 	moveBottom(){
 		if(!this.activeShape) return;
 
-		while(this.activeShape){
-			this.unresolve();
-			this.resolve();
-		}
+		while(this.move(this.activeShape, "down")){}
+
+		if(this.lockTimeout !== null) clearTimeout(this.lockTimeout);
+		this.deactivateShape();
+		this.insertShape();
 	}
 
 	rotateCounterclockwise(){
 		if(!this.activeShape) return;
 		this.activeShape.rotate(CellGrid.COUNTER_CLOCKWISE);
+		if(this.lockTimeout !== null) this.resetActiveLock();
+		this.emit("change");
 	}
 
 	rotateClockwise(){
 		if(!this.activeShape) return;
 		this.activeShape.rotate(CellGrid.CLOCKWISE);
+		if(this.lockTimeout !== null) this.resetActiveLock();
+		this.emit("change");
 	}
 }
 

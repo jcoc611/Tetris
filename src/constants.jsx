@@ -7,22 +7,48 @@ export var COLORS = [
 	'#C3B86D'
 ];
 
-export var DEFAULT_COLOR = 'transparent';
+export var DEFAULT_COLOR = '#EEEEEE';
+export var GHOST_COLOR = '#CCCCCC';
 
 // Shapes are 2d arrays [x, y] of bool.
 export var SHAPES = [
 	[
-		[1]
+		[0, 0, 0, 0],
+		[1, 1, 1, 1],
+		[0, 0, 0, 0],
+		[0, 0, 0, 0]
 	],
 	[
-		[1],
-		[1]
+		[1, 0, 0],
+		[1, 1, 1],
+		[0, 0, 0]
 	],
 	[
-		[1,1,1],  // $ $ $
-		[0,1,0]   //    $
+		[0, 0, 1],
+		[1, 1, 1],
+		[0, 0, 0]
+	],
+	[
+		[1, 1],
+		[1, 1]
+	],
+	[
+		[0, 1, 1],
+		[1, 1, 0],
+		[0, 0, 0]
+	],
+	[
+		[1, 1, 0],
+		[0, 1, 1],
+		[0, 0, 0]
+	],
+	[
+		[0, 1, 0],
+		[1, 1, 1]
 	]
 ];
 
 export var CELL_SIZE = 20;
 export var CELL_MARGIN = 1;
+
+export var LOCK_TIMEOUT = 500;

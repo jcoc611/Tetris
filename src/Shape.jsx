@@ -18,7 +18,7 @@ class Shape extends Emitter {
 		super();
 
 		this.cells = new CellGrid();
-		this.color = color;
+		this._color = color;
 		this.x = 0;
 		this.y = 0;
 	}
@@ -31,16 +31,15 @@ class Shape extends Emitter {
 			for(let k = 0; k < scheme[i].length; k++){
 				var cell;
 				
-				
 				if(scheme[i][k]){
 					cell = new Cell(k, i);
 					cell.shape = shape;
 					cell.color = color;
 					cell.resolved = false;
 					shape.cells.set(k, i, cell);
+				}else{
+					shape.cells.set(k, i, null);
 				}
-
-				
 			}
 		}
 
@@ -100,12 +99,22 @@ class Shape extends Emitter {
 		shape.y = this.y;
 
 		// Clone each cell
-		for(let cell of this.cells){
-			shape.cells.set(
-				cell.x - shape.x,
-				cell.y - shape.y,
-				cell.clone(shape)
-			);
+		// for(let cell of this.cells){
+		// 	shape.cells.set(
+		// 		cell.x - shape.x,
+		// 		cell.y - shape.y,
+		// 		cell.clone(shape)
+		// 	);
+		// }
+		for(let y = 0; y < this.height; y++){
+			for(let x = 0; x < this.width; x++){
+				var cell = this.cells.get(x, y);
+				if(cell) cell = cell.clone(shape);
+
+				shape.cells.set(
+					x, y, cell
+				);
+			}
 		}
 
 		return shape;
@@ -132,6 +141,18 @@ class Shape extends Emitter {
 	 */
 	get width(){
 		return this.cells.width; 
+	}
+
+
+	get color(){
+		return this._color;
+	}
+
+	set color(color){
+		this._color = color;
+		for(let cell of this.cells){
+			cell.color = color;
+		}
 	}
 };
 

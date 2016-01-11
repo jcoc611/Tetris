@@ -55,7 +55,7 @@ class CellGrid {
 	 * @param {Cell} cell The new contents of this coordinates.
 	 */
 	set(x, y, cell){
-		if(!cell instanceof Cell) throw new Error("Must be a cell!");
+		//if(!cell instanceof Cell) throw new Error("Must be a cell!");
 		if(!this.cells[y]) this.cells[y] = [];
 		this.cells[y][x] = cell;
 	}
@@ -267,6 +267,7 @@ class CellGrid {
 	[Symbol.iterator]() {
 		let cx = -1, cy = 0;
 		let self = this;
+
 		return {
 			next() {
 				var done = false, val;
@@ -278,7 +279,7 @@ class CellGrid {
 				// Skips null values (non-shape cells)
 				while(!done && !val){
 					// Iterate through cols first.
-					if(cx + 1 == self.cells[cy].length){
+					if(!self.cells[cy] || cx + 1 == self.cells[cy].length){
 						cx = 0;
 						cy++;
 					}else{
@@ -286,7 +287,7 @@ class CellGrid {
 					}
 
 					// Check done condition
-					if(cy == self.cells.length){
+					if(cy >= self.cells.length){
 						done = true;
 					}
 					val = self.get(cx, cy);
