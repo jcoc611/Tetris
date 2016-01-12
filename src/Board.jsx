@@ -371,7 +371,7 @@ class Board extends Emitter {
 			for(let col = 0; col < this.cells.width; col++){
 				var cell = this.cells.get(col, row);
 				if(!cell || cell.isEmpty()
-					|| cell.shape = this._ghostShape){
+					|| cell.shape == this._ghostShape){
 					full = false;
 					break;
 				}
