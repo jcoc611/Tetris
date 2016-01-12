@@ -113,9 +113,19 @@ class Board extends Emitter {
 		this.unresolve();
 		this.resolve();
 
+		// Is there an active shape that is falling?
+		var isActiveFalling = (
+			this.activeShape 
+			&& this.isActiveShape(this.activeShape)
+		);
+
+		// If active shape has touched ground, start lock timeout
+		// if it has started falling again, clear timeout
 		if(this.lockTimeout == null
 			&& this.activeShape
-			&& !this.isActiveShape(this.activeShape)) this.resetActiveLock();
+			&& !isActiveFalling) this.resetActiveLock();
+		else if(isActiveFalling) this.clearActiveLock();
+
 
 		// If there is no active shape, add a new one.
 		if(!this.activeShape) this.insertShape();
@@ -304,6 +314,7 @@ class Board extends Emitter {
 	 * the given shape from falling. False otherwise.
 	 */
 	isActiveShape(shape){
+		if(!shape) return false;
 
 		for(let cell of shape.cells){
 			if(cell.isEmpty()) continue;
@@ -325,11 +336,19 @@ class Board extends Emitter {
 	}
 
 	resetActiveLock(){
+		this.clearActiveLock();
+
 		var self = this;
-		if(this.lockTimeout !== null) clearTimeout(this.lockTimeout);
 		this.lockTimeout = setTimeout(function(){
 			self.deactivateShape();
 		}, LOCK_TIMEOUT);
+	}
+
+	clearActiveLock(){
+		if(this.lockTimeout !== null){
+			clearTimeout(this.lockTimeout);
+			this.lockTimeout = null;
+		}
 	}
 
 	/**
