@@ -1,4 +1,4 @@
-import {COLORS, GHOST_COLOR, SHAPES, LOCK_TIMEOUT} from './constants.jsx';
+import {COLORS, GHOST_COLOR, SHAPES, LOCK_TIMEOUT, BOARD_WIDTH} from './constants.jsx';
 import CellGrid from './CellGrid.jsx';
 import Emitter from './Emitter.jsx';
 import Shape from './Shape.jsx';
@@ -14,15 +14,15 @@ class Board extends Emitter {
 	 * @param  {int} h The height of the new board.
 	 * @constructor
 	 */
-	constructor(w, h){
+	constructor(h){
 		super();
 
 		this.queueColor = "#000";
 		this.colorIndex = 0;
 
 		// Settings
-		this.width = w;
-		this.height = h;
+		this.width = BOARD_WIDTH;
+		this.height = Math.max(h, 20);
 
 		// Grids
 		this.cells = new CellGrid();
@@ -35,8 +35,8 @@ class Board extends Emitter {
 		this.lockTimeout = null;
 
 		// Initialize cells
-		for(let i = 0; i < h; i++){
-			for(let k = 0; k < w; k++){
+		for(let i = 0; i < this.height; i++){
+			for(let k = 0; k < this.width; k++){
 				this.cells.set(k, i, new Cell(k, i));
 			}
 		}
@@ -106,9 +106,6 @@ class Board extends Emitter {
 	}
 
 	step(){
-		// Check if line is full, delete it
-		if(this.cells.last().isFull()) this.cells.shift();
-
 		// Gravity
 		this.unresolve();
 		this.resolve();
@@ -381,7 +378,7 @@ class Board extends Emitter {
 		this.emit("change");
 	}
 
-	get emptyLines(){
+	get fullLines(){
 		var lines = [];
 
 		for(let row = 0; row < this.cells.height; row++){
@@ -402,9 +399,31 @@ class Board extends Emitter {
 	}
 
 	clearLines(lines){
-		for(var z = 0; z < lines.length; z++){
+		// Precondition, lines are full
+
+		for(let line of lines){
+			// Use set to prevent duplicates
 			var shapes = new Set();
+
+			for(let cell of this.cells.cells[line]){
+				shapes.add(cell.shape);
+			}
+
+			// Tell each shape to delete this line
+			// Splitting it into two or less
+			// smaller shapes
+			for(let shape of shapes){
+				shape.deleteLine(line);
+			}
+
+			// Empty cells of this line
+			for(let col = 0; col < this.cells.width; col++){
+				this.cells.set(col, line, new Cell(col, line));
+			}
 		}
+
+		// Add score, exponential
+
 	}
 
 	deactivateShape(){

@@ -52,3 +52,5 @@ export var CELL_SIZE = 20;
 export var CELL_MARGIN = 1;
 
 export var LOCK_TIMEOUT = 500;
+
+export var BOARD_WIDTH = 10;

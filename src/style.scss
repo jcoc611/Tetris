@@ -14,7 +14,7 @@ html {
 
     div#game {
         display: block;
-        width: 663px;
+        width: 450px;
         margin: auto;
         background-color: #FDFDFD;
         box-shadow: 0 0 6px rgba(0, 0, 0, 0.17);
@@ -24,6 +24,8 @@ html {
         #board{
             display: inline-block;
             line-height: 0px;
+            margin-left: 20px;
+            margin-top:10%;
             .cell{
                 border-radius: 1px;
                 padding: 0;
@@ -35,7 +37,7 @@ html {
 
     
     div#score {
-        width: 30%;
+        width: 38%;
         display: inline-block;
         margin-left: 10px;
         vertical-align: top;
