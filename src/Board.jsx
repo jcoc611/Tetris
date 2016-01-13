@@ -110,6 +110,10 @@ class Board extends Emitter {
 		this.unresolve();
 		this.resolve();
 
+		var el = this.fullLines;
+
+		if(el.length) this.clearLines(el);
+
 		// Is there an active shape that is falling?
 		var isActiveFalling = (
 			this.activeShape 
