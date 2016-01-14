@@ -117,7 +117,9 @@ class Interface {
 		// Draw
 		for(let cell of this._board.cells){
 			$("#cell_" + cell.y + "_" + cell.x).css({
-				backgroundColor: cell.color
+				backgroundColor: cell.color,
+				boxShadow: "0 0 2px " + cell.color
+					+ ", inset 0 0 15px rgba(255, 255, 255, 0.3)"
 			});
 		}
 	}
