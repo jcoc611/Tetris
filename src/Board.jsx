@@ -44,7 +44,7 @@ class Board extends Emitter {
 		// Handlers
 		this.on("left", this.moveLeft);
 		this.on("right", this.moveRight);
-		this.on("down", this.rotateCounterclockwise);
+		this.on("down", this.step);
 		this.on("up", this.rotateClockwise);
 
 		this.on("add", this.moveBottom);

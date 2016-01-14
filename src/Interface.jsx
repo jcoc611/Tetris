@@ -1,4 +1,4 @@
-import {CELL_SIZE, CELL_MARGIN} from './constants.jsx';
+import {CELL_SIZE, CELL_MARGIN, STEP_TIMEOUT, STEP_FAST_TIMEOUT} from './constants.jsx';
 
 /**
  * A Tetris game user interface.
@@ -14,14 +14,22 @@ class Interface {
 		board.on("change", this.redraw.bind(this));
 
 		this._interval = null;
-		this.time = 300;
+
+		/**
+		* Game Pace
+		* 0 - none (stoped)
+		* 1 - normal
+		* 2 - fast
+		**/
+		this.pace = 0;
 	}
 
 	/**
 	 * Starts the game.
 	 */
 	start(){
-		var board = this._board;
+		var board = this._board,
+			self = this;
 		var $b = $("#board");
 
 		$b.css({
@@ -40,10 +48,12 @@ class Interface {
 					margin: CELL_MARGIN
 				});
 
-			$b.append($cell	);
+			$b.append($cell);
 		}
 
-		$("body").on("keyup", function(e){
+		$("body").on("keydown",function(e){
+			if(e.which == 40) self.paceFast();
+		}).on("keyup", function(e){
 			switch(e.which){
 				case 32:
 					board.emit("add");
@@ -52,7 +62,8 @@ class Interface {
 					board.emit("left");
 					break;
 				case 40:
-					board.emit("down");
+					//board.emit("down");
+					self.paceNormal();
 					break;
 				case 39:
 					board.emit("right");
@@ -65,7 +76,32 @@ class Interface {
 
 		board.on("death", this.stop);
 
-		this._interval = setInterval(this.step.bind(this), this.time);
+		this.paceNormal();
+	}
+
+	paceNormal(){
+		if(this.pace == 1) return; // Already at right pace
+		if(this._interval) clearInterval(this._interval);
+
+		this._interval = setInterval(
+			this.step.bind(this),
+			STEP_TIMEOUT
+		);
+
+		this.pace = 1;
+	}
+
+	paceFast(){
+		if(this.pace == 2) return; // Already at right pace
+		if(this._interval) clearInterval(this._interval);
+
+		this._interval = setInterval(
+			this.step.bind(this),
+			STEP_FAST_TIMEOUT
+		);
+		this.step();
+
+		this.pace = 2;
 	}
 
 	/**
