@@ -32,7 +32,11 @@ class Board extends Emitter {
 		this._ghostShape = null;
 		this._activeShape = null;
 
+		// Timeouts
 		this.lockTimeout = null;
+
+		// 7-bag of tetrominos
+		this.bag = new Bag();
 
 		// Initialize cells
 		for(let i = 0; i < this.height; i++){
