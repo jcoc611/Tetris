@@ -36,6 +36,9 @@ class Board extends Emitter {
 		// 7-bag of tetrominos
 		this.bag = new Bag(3);
 
+		// Scores
+		this.score = 0;
+
 		// Initialize cells
 		for(let i = 0; i < this.height; i++){
 			for(let k = 0; k < this.width; k++){
@@ -115,10 +118,6 @@ class Board extends Emitter {
 
 
 		if(!this.activeShape){
-			// Check for full lines + delete
-			var el = this.fullLines;
-			if(el.length) this.clearLines(el);
-
 			// Since there is no active shape, add a new one.
 			this.insertShape();
 		}
@@ -155,6 +154,10 @@ class Board extends Emitter {
 	}
 
 	insertShape(){
+		// Check for full lines + delete
+		var el = this.fullLines;
+		if(el.length) this.clearLines(el);
+
 		var sh = this.bag.grab();
 
 		sh.move(0, -sh.height);
@@ -411,7 +414,6 @@ class Board extends Emitter {
 
 	clearLines(lines){
 		// Precondition, lines are full
-		console.log(this.cells);
 		for(let line of lines){
 			// Group all shapes into two (above line and below)
 
@@ -448,16 +450,18 @@ class Board extends Emitter {
 				var belowShape = new Shape();
 				belowShape.x = 0;
 				belowShape.y = line + 1;
+				belowShape.on("change", this.shapeChanged.bind(this));
 
 				// Copy all cells up to, excluding rline
 				for(let y = line + 1; y < this.height; y++){
 					for(let x = 0; x < this.width; x++){
 						var cell = this.cells.get(x, y);
 
+						if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
 						if(cell) cell.shape = belowShape;
 
 						belowShape.cells.set(
-							x, y, cell
+							x, y - line - 1, cell
 						);
 					}
 				}
@@ -470,8 +474,10 @@ class Board extends Emitter {
 
 			
 		}
-		console.log(this.cells);
+
 		// Add score, exponential
+		this.score += Math.pow(2, lines.length) * 10;
+		this.emit("score:change", this.score);
 
 	}
 
@@ -508,6 +514,15 @@ class Board extends Emitter {
 		this.activeShape.rotate(CellGrid.CLOCKWISE);
 		if(this.lockTimeout !== null) this.resetActiveLock();
 		this.emit("change");
+	}
+
+	get score(){
+		return this._score;
+	}
+
+	set score(s){
+		this._score = s;
+		this.emit("score:change", s);
 	}
 }
 

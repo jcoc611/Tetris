@@ -75,8 +75,10 @@ class Interface {
 		});
 
 		board.on("death", this.stop);
+		board.on("score:change", this.setScore);
 
 		this.paceNormal();
+		this.setScore(0);
 	}
 
 	paceNormal(){
@@ -122,6 +124,10 @@ class Interface {
 					+ ", inset 0 0 15px rgba(255, 255, 255, 0.2)"
 			});
 		}
+	}
+
+	setScore(score){
+		$("#score-count").text(score);
 	}
 
 	/**
