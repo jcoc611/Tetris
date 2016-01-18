@@ -100,10 +100,6 @@ class Board extends Emitter {
 		this.unresolve();
 		this.resolve();
 
-		var el = this.fullLines;
-
-		if(el.length) this.clearLines(el);
-
 		// Is there an active shape that is falling?
 		var isActiveFalling = (
 			this.activeShape 
@@ -118,8 +114,14 @@ class Board extends Emitter {
 		else if(isActiveFalling) this.clearActiveLock();
 
 
-		// If there is no active shape, add a new one.
-		if(!this.activeShape) this.insertShape();
+		if(!this.activeShape){
+			// Check for full lines + delete
+			var el = this.fullLines;
+			if(el.length) this.clearLines(el);
+
+			// Since there is no active shape, add a new one.
+			this.insertShape();
+		}
 	}
 
 	/**
@@ -391,30 +393,84 @@ class Board extends Emitter {
 		return lines;
 	}
 
+	get firstLine(){
+		for(let row = 0; row < this.cells.height; row++){
+			// Check if full
+			
+			for(let col = 0; col < this.cells.width; col++){
+				var cell = this.cells.get(col, row);
+				if(!cell || cell.isEmpty()
+					|| cell.shape == this._ghostShape){
+					
+				}else return row;
+			}
+		}
+
+		return null;
+	}
+
 	clearLines(lines){
 		// Precondition, lines are full
-
+		console.log(this.cells);
 		for(let line of lines){
-			// Use set to prevent duplicates
-			var shapes = new Set();
+			// Group all shapes into two (above line and below)
 
-			for(let cell of this.cells.cells[line]){
-				shapes.add(cell.shape);
+			// Above
+			if(line > 0){
+				var aboveShape = new Shape(), sy = null;
+				var fl = this.firstLine;
+
+				aboveShape.x = 0;
+				aboveShape.y = fl;
+				aboveShape.on("change", this.shapeChanged.bind(this));
+
+				// Copy all cells up to, excluding line.
+				// Skip empty lines before first non-empty cell.
+				for(let y = fl; y < line; y++){
+					for(let x = 0; x < this.cells.width; x++){
+						var cell = this.cells.get(x, y);
+
+						if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
+						if(cell){
+							cell.shape = aboveShape;
+							cell.move(x, y); // Fixes some bugs
+						}
+
+						aboveShape.cells.set(
+							x, y - fl, cell
+						);
+					}
+				}
 			}
 
-			// Tell each shape to delete this line
-			// Splitting it into two or less
-			// smaller shapes
-			for(let shape of shapes){
-				shape.deleteLine(line);
+			// Below
+			if(line + 1 < this.cells.height){
+				var belowShape = new Shape();
+				belowShape.x = 0;
+				belowShape.y = line + 1;
+
+				// Copy all cells up to, excluding rline
+				for(let y = line + 1; y < this.height; y++){
+					for(let x = 0; x < this.width; x++){
+						var cell = this.cells.get(x, y);
+
+						if(cell) cell.shape = belowShape;
+
+						belowShape.cells.set(
+							x, y, cell
+						);
+					}
+				}
 			}
 
 			// Empty cells of this line
 			for(let col = 0; col < this.cells.width; col++){
 				this.cells.set(col, line, new Cell(col, line));
 			}
-		}
 
+			
+		}
+		console.log(this.cells);
 		// Add score, exponential
 
 	}
