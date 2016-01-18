@@ -1,8 +1,9 @@
-import {COLORS, GHOST_COLOR, SHAPES, LOCK_TIMEOUT, BOARD_WIDTH} from './constants.jsx';
+import {GHOST_COLOR, LOCK_TIMEOUT, BOARD_WIDTH} from './constants.jsx';
 import CellGrid from './CellGrid.jsx';
 import Emitter from './Emitter.jsx';
 import Shape from './Shape.jsx';
 import Cell from './Cell.jsx';
+import Bag from './Bag.jsx';
 
 /**
  * A Tetris board.
@@ -16,9 +17,6 @@ class Board extends Emitter {
 	 */
 	constructor(h){
 		super();
-
-		this.queueColor = "#000";
-		this.colorIndex = 0;
 
 		// Settings
 		this.width = BOARD_WIDTH;
@@ -36,7 +34,7 @@ class Board extends Emitter {
 		this.lockTimeout = null;
 
 		// 7-bag of tetrominos
-		this.bag = new Bag();
+		this.bag = new Bag(3);
 
 		// Initialize cells
 		for(let i = 0; i < this.height; i++){
@@ -53,18 +51,6 @@ class Board extends Emitter {
 
 		this.on("add", this.moveBottom);
 
-	}
-
-	/**
-	 * Returns the next shape color.
-	 * @return {String} next color in #RRGGBB format.
-	 */
-	nextColor(){
-		if(this.colorIndex + 1 == COLORS.length){
-			this.colorIndex = 0;
-		}else this.colorIndex++;
-
-		return COLORS[this.colorIndex];
 	}
 
 	/**
@@ -167,8 +153,7 @@ class Board extends Emitter {
 	}
 
 	insertShape(){
-		var rand = this.getRandomInt(0, 6);
-		var sh = Shape.fromScheme(SHAPES[rand], this.nextColor());
+		var sh = this.bag.grab();
 
 		sh.move(0, -sh.height);
 		this._activeShape = sh;
