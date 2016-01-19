@@ -12,3 +12,4 @@ A modern implementation of the classic.
 7. Fix dying/endgame.
 8. Add incoming tetriminos.
 9. Add hold piece. (Maybe?).
+10. [DONE - must add ui] Fix dying/endgame.

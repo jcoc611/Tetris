@@ -11,8 +11,6 @@ class Interface {
 	 */
 	constructor(board){
 		this._board = board;
-		board.on("change", this.redraw.bind(this));
-
 		this._interval = null;
 
 		/**
@@ -74,8 +72,9 @@ class Interface {
 			}
 		});
 
-		board.on("death", this.stop);
-		board.on("score:change", this.setScore);
+		board.on("death", this.stop.bind(this));
+		board.on("change", this.redraw.bind(this));
+		board.on("score:change", this.setScore.bind(this));
 
 		this.paceNormal();
 		this.setScore(0);
@@ -135,6 +134,7 @@ class Interface {
 	 */
 	stop(){
 		clearInterval(this._interval);
+		this.pace = 0;
 		alert("rekt");
 	}
 };

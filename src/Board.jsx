@@ -255,7 +255,6 @@ class Board extends Emitter {
 		this.deleteShape(active);
 
 		ghost.color = GHOST_COLOR;
-		if(ghost.y < 0) ghost.move(ghost.x, 0, true);
 
 		while(this.move(ghost, "down")){}
 
@@ -510,6 +509,9 @@ class Board extends Emitter {
 	}
 
 	deactivateShape(){
+		if(this._activeShape && this._activeShape.y < 0){
+			this.emit("death");
+		}
 		this.lockTimeout = null;
 		this._activeShape = null;
 		this._ghostShape = null;
