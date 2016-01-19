@@ -11,20 +11,6 @@ class CellGrid {
 	constructor(){
 		this.cells = [];
 	}
-
-	/**
-	 * Describes a rotation in a clockwise direction.
-	 */
-	static get CLOCKWISE(){
-		return 1;
-	} 
-
-	/**
-	 * Describes a rotation in a counter-clockwise direction.
-	 */
-	static get COUNTER_CLOCKWISE(){
-		return 2;
-	}
 	
 	/**
 	 * Returns the cell at a given position.
@@ -185,59 +171,31 @@ class CellGrid {
 	}
 
 	/**
-	 * Rotates this grid in a given direction.
-	 * @param  {int} direction the direction in which to rotate this grid.
+	 * Rotates this grid in a clockwise direction.
 	 */
-	rotate(direction){
+	rotate(){
 		var newCells = [];
 
 		// Cant rotate emptiness
 		if(this.height == 0 || this.width == 0) return;
 
-		switch(direction){
-			case CellGrid.CLOCKWISE:
-				// The origin x and y
-				var ox, oy;
+		// The origin x and y
+		var ox, oy;
 
-				for(let i = 0; i < this.width; i++){
-					newCells[i] = [];
+		for(let i = 0; i < this.width; i++){
+			newCells[i] = [];
 
-					for(let k = this.height - 1; k >= 0; k--){
-						var cell = this.get(i, k);
-						if(cell){
-							if(!ox){
-								ox = cell.shape.x;
-								oy = cell.shape.y;
-							}
-							cell.move(ox - k + this.height - 1, oy + i);
-						}
-						newCells[i].push(cell);
+			for(let k = this.height - 1; k >= 0; k--){
+				var cell = this.get(i, k);
+				if(cell){
+					if(!ox){
+						ox = cell.shape.x;
+						oy = cell.shape.y;
 					}
+					cell.move(ox - k + this.height - 1, oy + i);
 				}
-				break;
-			case CellGrid.COUNTER_CLOCKWISE:
-				// The origin x and y
-				var ox, oy;
-
-				for(let i = this.width - 1; i >= 0; i--){
-					var y = this.width - 1 - i;
-					newCells[y] = [];
-
-					for(let k = 0; k < this.height; k++){
-						var cell = this.get(i, k);
-						if(cell){
-							if(!ox){
-								ox = cell.shape.x;
-								oy = cell.shape.y;
-							}
-							cell.move(ox + k, oy + y);
-						}
-						newCells[y].push(cell);
-					}
-				}
-				break;
-			default:
-				throw new Error("Unknown direction: "+direction);
+				newCells[i].push(cell);
+			}
 		}
 
 		this.cells = newCells;

@@ -15,6 +15,7 @@ class Bag {
 	constructor(min){
 		this.queue = [];
 		this.min = min || 3;
+		this.replenish();
 	}
 
 	/**

@@ -73,7 +73,7 @@ export var CELL_MARGIN = 1;
 export var BOARD_WIDTH = 10;
 
 // Times
-export var LOCK_TIMEOUT = 500;
-export var STEP_TIMEOUT = 400;
-export var STEP_FAST_TIMEOUT = 100;
+export var LOCK_TIMEOUT = 300;
+export var STEP_TIMEOUT = 600;
+export var STEP_FAST_TIMEOUT = 80;
 

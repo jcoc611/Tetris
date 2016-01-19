@@ -113,11 +113,11 @@ class Shape extends Emitter {
 		return shape;
 	}
 
-	rotate(direction){
-		var old = this.clone();
+	rotate(){
+		var rotated = this.clone();
 
-		this.cells.rotate(direction);
-		this.emit("change", old, this);
+		rotated.cells.rotate();
+		this.emit("rotate", this, rotated);
 	}
 
 	deleteLine(line){

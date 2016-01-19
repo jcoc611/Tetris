@@ -50,7 +50,7 @@ class Board extends Emitter {
 		this.on("left", this.moveLeft);
 		this.on("right", this.moveRight);
 		this.on("down", this.step);
-		this.on("up", this.rotateClockwise);
+		this.on("up", this.rotate);
 
 		this.on("add", this.moveBottom);
 
@@ -149,10 +149,6 @@ class Board extends Emitter {
 		);
 	}
 
-	getRandomInt(min, max) {
-		return Math.floor(Math.random() * (max - min + 1)) + min;
-	}
-
 	insertShape(){
 		// Check for full lines + delete
 		var el = this.fullLines;
@@ -164,18 +160,17 @@ class Board extends Emitter {
 		this._activeShape = sh;
 
 		this.addShape(sh);
-	}
-
-	/**
-	 * Enqueues a shape to this board.
-	 * @param {Shape} shape The shape to be enqueued.
-	 */
-	addShape(shape){
-		shape.on("change", this.shapeChanged.bind(this));
 
 		this.queue.clear();
-		this.queue.addShape(shape);
+		this.queue.addShape(sh);
 	}
+
+
+	addShape(shape){
+		shape.on("change", this.shapeChanged.bind(this));
+		shape.on("rotate", this.shapeRotated.bind(this));
+	}
+
 
 	deleteShape(shape){
 		for(let cell of shape.cells){
@@ -183,10 +178,47 @@ class Board extends Emitter {
 		}
 	}
 
-	addShapeCool(shape){
+	drawShape(shape){
 		for(let cell of shape.cells){
 			this.set(cell.x, cell.y, cell);
 		}
+	}
+
+	shapeRotated(old, rotated){
+		this.deleteShape(old);
+
+		// Check collisions
+		// If rotation takes shape off-screen
+		// Move the shape into screen if possible
+		// (If such move doesn't collide with another shape)
+		for(let cell of rotated.cells){
+			var boardCell = this.get(cell.x, cell.y);
+			if(boardCell && boardCell.shape && boardCell.shape != old){
+				return this.drawShape(old);
+			}
+			// Check bounds
+			// Left bound
+			if(cell.x < 0){
+				if(!this.move(old, "right", true)) return this.drawShape(old);;
+			}
+
+			// Right bound
+			if(cell.x >= this.width){
+				if(!this.move(old, "left", true)) return this.drawShape(old);;
+			}
+
+			// Bottom bound
+			if(cell.y >= this.height){
+				shape.resolve();
+				return this.drawShape(old);;
+			}
+		}
+
+		// TODO: think of way to prevent rotating twice
+		old.cells.rotate();
+		this.drawShape(old);
+
+		this.updateGhost();
 	}
 
 	/**
@@ -201,12 +233,8 @@ class Board extends Emitter {
 		// Ignore ghost
 		if(newShape == this._ghostShape) return;
 
-		// Shape has moved from (ox, oy) to (nx, ny)
-		// Delete shape at (ox, oy).
 		this.deleteShape(old);
-
-		// Add shape at (nx, ny)
-		this.addShapeCool(newShape);
+		this.drawShape(newShape);
 
 		// If this active den update ghost
 		if(this.activeShape == newShape){
@@ -232,9 +260,9 @@ class Board extends Emitter {
 		while(this.move(ghost, "down")){}
 
 		this._ghostShape = ghost;
-		this.addShapeCool(this._ghostShape);
+		this.drawShape(this._ghostShape);
 
-		this.addShapeCool(active);
+		this.drawShape(active);
 	}
 
 	/**
@@ -243,7 +271,7 @@ class Board extends Emitter {
 	 * @param  {String} direction The direction the shape
 	 *                            should be moved.
 	 */
-	move(shape, direction){
+	move(shape, direction, flag){
 		// Compute change in x, y.
 		var dx, dy;
 		switch(direction){
@@ -296,7 +324,7 @@ class Board extends Emitter {
 		}
 
 		// Move
-		shape.move(shape.x + dx, shape.y + dy);
+		shape.move(shape.x + dx, shape.y + dy, flag);
 		shape.resolve();
 		return true;
 	}
@@ -424,7 +452,7 @@ class Board extends Emitter {
 
 				aboveShape.x = 0;
 				aboveShape.y = fl;
-				aboveShape.on("change", this.shapeChanged.bind(this));
+				this.addShape(aboveShape);
 
 				// Copy all cells up to, excluding line.
 				// Skip empty lines before first non-empty cell.
@@ -450,7 +478,7 @@ class Board extends Emitter {
 				var belowShape = new Shape();
 				belowShape.x = 0;
 				belowShape.y = line + 1;
-				belowShape.on("change", this.shapeChanged.bind(this));
+				this.addShape(belowShape);
 
 				// Copy all cells up to, excluding rline
 				for(let y = line + 1; y < this.height; y++){
@@ -502,16 +530,9 @@ class Board extends Emitter {
 		this.insertShape();
 	}
 
-	rotateCounterclockwise(){
+	rotate(){
 		if(!this.activeShape) return;
-		this.activeShape.rotate(CellGrid.COUNTER_CLOCKWISE);
-		if(this.lockTimeout !== null) this.resetActiveLock();
-		this.emit("change");
-	}
-
-	rotateClockwise(){
-		if(!this.activeShape) return;
-		this.activeShape.rotate(CellGrid.CLOCKWISE);
+		this.activeShape.rotate();
 		if(this.lockTimeout !== null) this.resetActiveLock();
 		this.emit("change");
 	}
