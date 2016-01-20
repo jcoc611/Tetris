@@ -12,3 +12,4 @@ A modern implementation of the classic.
 7. [DONE - must add ui] Fix dying/endgame.
 8. [DONE] Add incoming tetriminos.
 9. Add hold piece. (Maybe?).
+10. Add collision detection to ghost piece and only draw on no collision.
