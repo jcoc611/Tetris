@@ -10,5 +10,5 @@ A modern implementation of the classic.
 5. [DONE] Add 7-bag system for tetromino selection.
 6. Fix multiple row deletion on non-contiguous lines.
 7. [DONE - must add ui] Fix dying/endgame.
-8. Add incoming tetriminos.
+8. [DONE] Add incoming tetriminos.
 9. Add hold piece. (Maybe?).
