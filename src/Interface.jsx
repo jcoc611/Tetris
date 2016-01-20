@@ -13,6 +13,7 @@ class Interface {
 	constructor(board){
 		this._board = board;
 		this._interval = null;
+		this._nextTimeout = null;
 
 		/**
 		* Game Pace
@@ -137,7 +138,7 @@ class Interface {
 
 	updateNext(){
 		// Get next shape
-		var next = this._board.bag.peekAt(2);
+		var next = this._board.bag.peekAt(2), self = this;
 
 		// Insert next shape
 		this.addNextShape(next);
@@ -146,14 +147,21 @@ class Interface {
 		// (First child of div)
 		var $el = $("#next-shapes .shape:first-child");
 
+		if(this._nextTimeout !== null){
+			clearTimeout(this._nextTimeout);
+			$el.remove();
+			$el = $("#next-shapes .shape:first-child");
+		}
+
 		$el.animate({
 			right: -1000
 		}, 200).delay(400).animate({
 			height: 0
 		}, 400, "easeOutBounce");
 
-		setTimeout(function(){
+		this._nextTimeout = setTimeout(function(){
 			$el.remove();
+			self._nextTimeout = null;
 		}, 1000);
 	}
 
@@ -163,7 +171,8 @@ class Interface {
 		$shape.addClass("shape")
 		.css({
 			width: CELL_SIZE*shape.cells.width,
-			height: CELL_SIZE*2 // Hardcoded for better style
+			height: CELL_SIZE*2, // Hardcoded for better style,
+			opacity: 0
 		});
 
 		for(let row = 0; row < shape.cells.height; row++){
@@ -188,6 +197,9 @@ class Interface {
 		}
 
 		$("#next-shapes").append($shape);
+		$shape.animate({
+			opacity: 1
+		}, 400);
 	}
 
 	setScore(score){
