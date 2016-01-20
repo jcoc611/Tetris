@@ -46,9 +46,16 @@ class Bag {
 
 		amount = Math.min(this.min, amount);
 
-		for(var z = 0; z < amount; z++){
+		for(var z = this.queue.length - 1; z >= this.queue.length - amount; z--){
 			peekShapes.push(this.queue[z]);
 		}
+
+		return peekShapes;
+	}
+
+	peekAt(position){
+		// 0-base
+		return this.queue[this.queue.length - 1 - position];
 	}
 
 	/**

@@ -1,4 +1,5 @@
 import {CELL_SIZE, CELL_MARGIN, STEP_TIMEOUT, STEP_FAST_TIMEOUT} from './constants.jsx';
+import easeOutBounce from './jquery.easing.jsx';
 
 /**
  * A Tetris game user interface.
@@ -30,6 +31,9 @@ class Interface {
 			self = this;
 		var $b = $("#board");
 
+		// Add custom animations
+		$.easing.easeOutBounce = easeOutBounce;
+
 		$b.css({
 			width: CELL_SIZE * board.width,
 			height: CELL_SIZE * board.height
@@ -47,6 +51,11 @@ class Interface {
 				});
 
 			$b.append($cell);
+		}
+
+		// Draw the next shapes
+		for(let shape of board.bag.peek(3)){
+			this.addNextShape(shape);
 		}
 
 		$("body").on("keydown",function(e){
@@ -75,6 +84,7 @@ class Interface {
 		board.on("death", this.stop.bind(this));
 		board.on("change", this.redraw.bind(this));
 		board.on("score:change", this.setScore.bind(this));
+		board.on("shape:add", this.updateNext.bind(this));
 
 		this.paceNormal();
 		this.setScore(0);
@@ -123,6 +133,61 @@ class Interface {
 					+ ", inset 0 0 15px rgba(255, 255, 255, 0.2)"
 			});
 		}
+	}
+
+	updateNext(){
+		// Get next shape
+		var next = this._board.bag.peekAt(2);
+
+		// Insert next shape
+		this.addNextShape(next);
+
+		// Animate shape being inserted
+		// (First child of div)
+		var $el = $("#next-shapes .shape:first-child");
+
+		$el.animate({
+			right: -1000
+		}, 200).delay(400).animate({
+			height: 0
+		}, 400, "easeOutBounce");
+
+		setTimeout(function(){
+			$el.remove();
+		}, 1000);
+	}
+
+	addNextShape(shape){
+		var $shape = $("<span>");
+
+		$shape.addClass("shape")
+		.css({
+			width: CELL_SIZE*shape.cells.width,
+			height: CELL_SIZE*2 // Hardcoded for better style
+		});
+
+		for(let row = 0; row < shape.cells.height; row++){
+			for(let col = 0; col < shape.cells.width; col++){
+				var $cell = $("<span>");
+
+				var cell = shape.cells.get(col, row),
+					cellColor = (cell)? cell.color : "#FFF";
+
+				$cell.addClass("cell")
+				.css({
+					width: CELL_SIZE - 2*CELL_MARGIN,
+					height: CELL_SIZE - 2*CELL_MARGIN,
+					margin: CELL_MARGIN,
+					backgroundColor: cellColor,
+					boxShadow: "0 0 2px " + cellColor
+						+ ", inset 0 0 15px rgba(255, 255, 255, 0.2)"
+				});
+
+				$shape.append($cell);
+			}
+		}
+
+		$("#next-shapes").append($shape);
 	}
 
 	setScore(score){

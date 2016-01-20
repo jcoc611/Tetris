@@ -26,12 +26,12 @@ html {
             line-height: 0px;
             margin-left: 20px;
             margin-top:10%;
-            .cell{
-                border-radius: 1px;
-                padding: 0;
-                margin: 0;
-                display: inline-block;
-            }
+        }
+        .cell{
+            border-radius: 1px;
+            padding: 0;
+            margin: 0;
+            display: inline-block;
         }
     }
 
@@ -43,11 +43,24 @@ html {
         vertical-align: top;
         h3 {
             display: inline-block;
+            margin: 0 1px;
+            font-size: 1em;
         }
         p#score-count {
             display: inline-block;
             vertical-align: middle;
             margin-left: 10px;
+        }
+        div#next-shapes{
+            overflow: hidden;
+            .shape{
+                display:block;
+                position: relative;
+                line-height: 0px;
+                margin: 5px;
+                float: right;
+                clear: both;
+            }
         }
     }
 }

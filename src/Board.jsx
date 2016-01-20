@@ -163,6 +163,8 @@ class Board extends Emitter {
 
 		this.queue.clear();
 		this.queue.addShape(sh);
+
+		this.emit("shape:add");
 	}
 
 
