@@ -73,7 +73,7 @@ class Bag {
 
 		// Add all shapes in random order
 		for(let shape of shapes){
-			this.queue.push(shape);
+			this.queue.unshift(shape);
 		}
 	}
 

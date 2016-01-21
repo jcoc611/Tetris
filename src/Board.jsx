@@ -75,15 +75,19 @@ class Board extends Emitter {
 		}
 		
 		// Process board
-		for(let cell of this.cells){
-			if(cell.resolved) continue;
-			if(cell.isEmpty()) continue;
-			if(cell.shape == this._ghostShape) continue;
-			
-			if(this.isActiveShape(cell.shape)){
-				this.move(cell.shape, "down");
-				flag = false;
-			}else cell.shape.resolve();
+		for(let row = this.height - 1; row >= 0; row--){
+			for(let col = this.width - 1; col >= 0; col--){
+				let cell = this.cells.get(col, row);
+
+				if(cell.resolved) continue;
+				if(cell.isEmpty()) continue;
+				if(cell.shape == this._ghostShape) continue;
+				
+				if(this.isActiveShape(cell.shape)){
+					this.move(cell.shape, "down");
+					flag = false;
+				}else cell.shape.resolve();
+			}
 		}
 
 		return flag;
@@ -441,67 +445,55 @@ class Board extends Emitter {
 		return null;
 	}
 
+	groupRange(start, end){
+		if(start >= end) return;
+
+		// INCLUSIVE
+		var shape = new Shape(), sy = null;
+
+		shape.x = 0;
+		shape.y = start;
+		this.addShape(shape);
+
+		// Copy all cells up to, excluding line.
+		// Skip empty lines before first non-empty cell.
+		for(let y = start; y <= end; y++){
+			for(let x = 0; x < this.cells.width; x++){
+				var cell = this.cells.get(x, y);
+
+				if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
+				if(cell){
+					cell.shape = shape;
+					cell.move(x, y); // Fixes some bugs
+				}
+
+				shape.cells.set(
+					x, y - start, cell
+				);
+			}
+		}
+	}
+
 	clearLines(lines){
 		// Precondition, lines are full
+
+		// group before first line
+		this.groupRange(this.firstLine, lines[0] - 1);
+
+		// group between lines
+		for(let z = 0; z < lines.length - 1; z++){
+			this.groupRange(lines[z] + 1, lines[z+1] - 1);
+		}
+
+		// Group after last line
+		this.groupRange(lines[lines.length-1] + 1, this.height);
+
+		// Delete lines
 		for(let line of lines){
-			// Group all shapes into two (above line and below)
-
-			// Above
-			if(line > 0){
-				var aboveShape = new Shape(), sy = null;
-				var fl = this.firstLine;
-
-				aboveShape.x = 0;
-				aboveShape.y = fl;
-				this.addShape(aboveShape);
-
-				// Copy all cells up to, excluding line.
-				// Skip empty lines before first non-empty cell.
-				for(let y = fl; y < line; y++){
-					for(let x = 0; x < this.cells.width; x++){
-						var cell = this.cells.get(x, y);
-
-						if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
-						if(cell){
-							cell.shape = aboveShape;
-							cell.move(x, y); // Fixes some bugs
-						}
-
-						aboveShape.cells.set(
-							x, y - fl, cell
-						);
-					}
-				}
-			}
-
-			// Below
-			if(line + 1 < this.cells.height){
-				var belowShape = new Shape();
-				belowShape.x = 0;
-				belowShape.y = line + 1;
-				this.addShape(belowShape);
-
-				// Copy all cells up to, excluding rline
-				for(let y = line + 1; y < this.height; y++){
-					for(let x = 0; x < this.width; x++){
-						var cell = this.cells.get(x, y);
-
-						if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
-						if(cell) cell.shape = belowShape;
-
-						belowShape.cells.set(
-							x, y - line - 1, cell
-						);
-					}
-				}
-			}
-
 			// Empty cells of this line
 			for(let col = 0; col < this.cells.width; col++){
 				this.cells.set(col, line, new Cell(col, line));
 			}
-
-			
 		}
 
 		// Add score, exponential
