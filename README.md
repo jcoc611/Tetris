@@ -9,7 +9,7 @@ A modern implementation of the classic.
 4. [DONE] Add collision detection on rotation.
 5. [DONE] Add 7-bag system for tetromino selection.
 6. [DONE] Fix multiple row deletion on non-contiguous lines.
-7. [DONE - must add ui] Fix dying/endgame.
+7. [DONE] Fix dying/endgame.
 8. [DONE] Add incoming tetriminos.
 9. Add hold piece. (Maybe?).
 10. Add collision detection to ghost piece and only draw on no collision.
