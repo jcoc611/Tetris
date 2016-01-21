@@ -509,6 +509,15 @@ class Board extends Emitter {
 		if(this._activeShape && this._activeShape.y < 0){
 			this.emit("death");
 		}
+		// Undraw/delete ghost
+		if(this._ghostShape){
+			for(let cell of this._ghostShape.cells){
+				if(this.get(cell.x, cell.y).shape == this._ghostShape){
+					this.set(cell.x, cell.y, new Cell(cell.x, cell.y));
+				}
+			}
+		}
+
 		this.lockTimeout = null;
 		this._activeShape = null;
 		this._ghostShape = null;

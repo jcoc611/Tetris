@@ -71,6 +71,7 @@ export var SHAPES = [
 export var CELL_SIZE = 20;
 export var CELL_MARGIN = 1;
 export var BOARD_WIDTH = 10;
+export var BOARD_HEIGHT = 20;
 
 // Times
 export var LOCK_TIMEOUT = 300;
