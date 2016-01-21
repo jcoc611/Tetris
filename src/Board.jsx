@@ -39,6 +39,8 @@ class Board extends Emitter {
 		// Scores
 		this.score = 0;
 
+
+
 		// Initialize cells
 		for(let i = 0; i < this.height; i++){
 			for(let k = 0; k < this.width; k++){
@@ -446,7 +448,7 @@ class Board extends Emitter {
 	}
 
 	groupRange(start, end){
-		if(start >= end) return;
+		if(start > end) return;
 
 		// INCLUSIVE
 		var shape = new Shape(), sy = null;
@@ -464,12 +466,13 @@ class Board extends Emitter {
 				if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
 				if(cell){
 					cell.shape = shape;
-					cell.move(x, y); // Fixes some bugs
+					//cell.move(x, y); // Fixes some bugs
 				}
 
 				shape.cells.set(
 					x, y - start, cell
 				);
+				this.cells.set(x, y, cell || new Cell(x, y));
 			}
 		}
 	}

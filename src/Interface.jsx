@@ -70,7 +70,6 @@ class Interface {
 					board.emit("left");
 					break;
 				case 40:
-					//board.emit("down");
 					self.paceNormal();
 					break;
 				case 39:
@@ -212,7 +211,7 @@ class Interface {
 	stop(){
 		clearInterval(this._interval);
 		this.pace = 0;
-		alert("rekt");
+		$("#death").fadeIn(200);
 	}
 };
 
