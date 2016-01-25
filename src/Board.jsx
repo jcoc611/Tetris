@@ -370,7 +370,7 @@ class Board extends Emitter {
 
 		var self = this;
 		this.lockTimeout = setTimeout(function(){
-			self.deactivateShape();
+			if(self.lockTimeout !== null) self.deactivateShape();
 		}, LOCK_TIMEOUT);
 	}
 
