@@ -509,6 +509,9 @@ class Board extends Emitter {
 		if(this._activeShape && this._activeShape.y < 0){
 			this.emit("death");
 		}
+		if(this._activeShape && this.isActiveShape(this._activeShape)){
+			return this.clearActiveLock();
+		}
 		// Undraw/delete ghost
 		if(this._ghostShape){
 			for(let cell of this._ghostShape.cells){

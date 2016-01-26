@@ -39,3 +39,4 @@ node_modules
 
 # Webpack
 dist/
+bower_components
