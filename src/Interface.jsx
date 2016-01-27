@@ -66,11 +66,18 @@ class Interface {
 				case 32:
 					board.emit("add");
 					break;
-				case 37:
-					board.emit("left");
-					break;
 				case 40:
 					self.paceNormal();
+					break;
+			}
+		});
+
+		$(document).on("keypress", function(e){
+			console.log(e.which);
+			throw new Error("asdf");
+			switch(e.which){
+				case 37:
+					board.emit("left");
 					break;
 				case 39:
 					board.emit("right");
