@@ -38,8 +38,7 @@ class Board extends Emitter {
 
 		// Scores
 		this.score = 0;
-
-
+		this.level = 1;
 
 		// Initialize cells
 		for(let i = 0; i < this.height; i++){
@@ -502,6 +501,12 @@ class Board extends Emitter {
 		// Add score, exponential
 		this.score += Math.pow(2, lines.length) * 10;
 		this.emit("score:change", this.score);
+
+		var lvl = Math.floor(Math.log2(this.score/10));
+		if(this.level != lvl){
+			this.level = lvl;
+			this.emit("level:change", this.level);
+		}
 
 	}
 

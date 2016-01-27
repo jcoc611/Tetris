@@ -44,15 +44,18 @@ html {
         display: inline-block;
         margin-left: 10px;
         vertical-align: top;
+        text-align:right;
         h3 {
             display: inline-block;
             margin: 0 1px;
             font-size: 1em;
         }
-        p#score-count {
+        p#score-count, p#level-count {
             display: inline-block;
             vertical-align: middle;
             margin-left: 10px;
+            margin-top: 0;
+            margin-bottom: 0;
         }
         div#next-shapes{
             overflow: hidden;

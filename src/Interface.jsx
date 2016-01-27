@@ -12,7 +12,7 @@ class Interface {
 	 */
 	constructor(board){
 		this._board = board;
-		this._interval = null;
+		this._timeout = null;
 		this._nextTimeout = null;
 
 		/**
@@ -88,44 +88,45 @@ class Interface {
 		board.on("death", this.stop.bind(this));
 		board.on("change", this.redraw.bind(this));
 		board.on("score:change", this.setScore.bind(this));
+		board.on("level:change", this.setLevel.bind(this));
 		board.on("shape:add", this.updateNext.bind(this));
 
 		this.paceNormal();
 		this.setScore(0);
+		this.setLevel(1);
 	}
 
 	paceNormal(){
 		if(this.pace == 1) return; // Already at right pace
-		if(this._interval) clearInterval(this._interval);
-
-		this._interval = setInterval(
-			this.step.bind(this),
-			STEP_TIMEOUT
-		);
 
 		this.pace = 1;
+		this.enqueue();
 	}
 
 	paceFast(){
-		if(this.pace == 2) return; // Already at right pace
-		if(this._interval) clearInterval(this._interval);
+		if(this.pace == 10) return; // Already at right pace
+		
+		this.pace = 10;
+		this.enqueue();
+	}
 
-		this._interval = setInterval(
+	enqueue(){
+		if(this._timeout !== null) clearTimeout(this._timeout);
+		this._timeout = setTimeout(
 			this.step.bind(this),
-			STEP_FAST_TIMEOUT
+			(1 / this.pace) * STEP_TIMEOUT * (1/Math.log(this._board.level + 1))
 		);
-		this.step();
-
-		this.pace = 2;
 	}
 
 	/**
 	 * Computes and displays a new frame.
 	 */
 	step(){
+		this._timeout = null;
 		this._board.step();
 		
 		this.redraw();
+		this.enqueue();
 	}
 
 	redraw(){
@@ -209,11 +210,15 @@ class Interface {
 		$("#score-count").text(score);
 	}
 
+	setLevel(level){
+		$("#level-count").text(level);
+	}
+
 	/**
 	 * Stops the game.
 	 */
 	stop(){
-		clearInterval(this._interval);
+		clearTimeout(this._timeout);
 		this.pace = 0;
 		$("#death").fadeIn(200);
 	}
