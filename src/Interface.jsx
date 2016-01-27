@@ -59,9 +59,7 @@ class Interface {
 			this.addNextShape(shape);
 		}
 
-		$("body").on("keydown",function(e){
-			if(e.which == 40) self.paceFast();
-		}).on("keyup", function(e){
+		$(document).on("keydown",function(e){
 			switch(e.which){
 				case 32:
 					board.emit("add");
@@ -81,6 +79,15 @@ class Interface {
 					break;
 				case 39:
 					board.emit("right");
+					break;
+			}
+		}).on("keyup", function(e){
+			switch(e.which){
+				case 32:
+					board.emit("add");
+					break;
+				case 40:
+					self.paceNormal();
 					break;
 				case 38:
 					board.emit("up");
