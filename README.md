@@ -14,3 +14,4 @@ A modern implementation of the classic.
 9. Add hold piece. (Maybe?).
 10. [DONE] Add collision detection to ghost piece and only draw on no collision.
 11. Allow movement on holding keys.
+12. Add levels (increasing speed of regular clock).
