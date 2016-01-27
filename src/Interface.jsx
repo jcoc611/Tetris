@@ -61,19 +61,9 @@ class Interface {
 
 		$(document).on("keydown",function(e){
 			switch(e.which){
-				case 32:
-					board.emit("add");
-					break;
 				case 40:
-					self.paceNormal();
+					self.paceFast();
 					break;
-			}
-		});
-
-		$(document).on("keypress", function(e){
-			console.log(e.which);
-			throw new Error("asdf");
-			switch(e.which){
 				case 37:
 					board.emit("left");
 					break;
