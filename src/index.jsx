@@ -3,6 +3,7 @@
  *  A modern implementation of the classic.
  *  JCOC611 2016.
  *  MIT License, see LICENSE.
+ * @preserve
  */
 require("!style!css!sass!./style.scss");
 
