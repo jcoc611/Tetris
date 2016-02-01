@@ -1,4 +1,9 @@
-import {CELL_SIZE, CELL_MARGIN, STEP_TIMEOUT, STEP_FAST_TIMEOUT} from './constants.jsx';
+import { 	CELL_SIZE,
+		CELL_MARGIN,
+		STEP_TIMEOUT,
+		PACE_NORMAL,
+		PACE_FAST
+	} from './constants.jsx';
 import easeOutBounce from './jquery.easing.jsx';
 
 /**
@@ -14,14 +19,7 @@ class Interface {
 		this._board = board;
 		this._timeout = null;
 		this._nextTimeout = null;
-
-		/**
-		* Game Pace
-		* 0 - none (stoped)
-		* 1 - normal
-		* 2 - fast
-		**/
-		this.pace = 0;
+		this._pace = 0;
 	}
 
 	/**
@@ -30,6 +28,7 @@ class Interface {
 	start(){
 		var board = this._board,
 			self = this;
+
 		var $b = $("#board");
 
 		// Add custom animations
@@ -40,6 +39,7 @@ class Interface {
 			height: CELL_SIZE * board.height
 		});
 
+		// Create cells
 		for(let cell of board.cells){
 			var $cell = $("<span>");
 
@@ -61,14 +61,14 @@ class Interface {
 
 		$(document).on("keydown",function(e){
 			switch(e.which){
-				case 40:
-					self.paceFast();
-					break;
 				case 37:
 					board.emit("left");
 					break;
 				case 39:
 					board.emit("right");
+					break;
+				case 40:
+					self.pace = PACE_FAST;
 					break;
 			}
 		}).on("keyup", function(e){
@@ -76,40 +76,35 @@ class Interface {
 				case 32:
 					board.emit("add");
 					break;
-				case 40:
-					self.paceNormal();
-					break;
+				
 				case 38:
 					board.emit("up");
+					break;
+
+				case 40:
+					self.pace = PACE_NORMAL;
 					break;
 			}
 		});
 
 		board.on("death", this.stop.bind(this));
 		board.on("change", this.redraw.bind(this));
-		board.on("score:change", this.setScore.bind(this));
-		board.on("level:change", this.setLevel.bind(this));
 		board.on("shape:add", this.updateNext.bind(this));
+		board.on("score:change", function(score){
+			self.score = score;
+		});
+		board.on("level:change", function(level){
+			self.level = level;
+		});
 
-		this.paceNormal();
-		this.setScore(0);
-		this.setLevel(1);
+		this.pace = PACE_NORMAL;
+		this.score = 0;
+		this.level = 1;
 	}
 
-	paceNormal(){
-		if(this.pace == 1) return; // Already at right pace
-
-		this.pace = 1;
-		this.enqueue();
-	}
-
-	paceFast(){
-		if(this.pace == 10) return; // Already at right pace
-		
-		this.pace = 10;
-		this.enqueue();
-	}
-
+	/**
+	 * Prepares the next step of the game.
+	 */
 	enqueue(){
 		if(this._timeout !== null) clearTimeout(this._timeout);
 		this._timeout = setTimeout(
@@ -129,6 +124,9 @@ class Interface {
 		this.enqueue();
 	}
 
+	/**
+	 * Displays the board cells on the screen.
+	 */
 	redraw(){
 		// Draw
 		for(let cell of this._board.cells){
@@ -140,6 +138,10 @@ class Interface {
 		}
 	}
 
+	/**
+	 * Removes the top-most shape in the next shapes queue
+	 * and moves the queue up.
+	 */
 	updateNext(){
 		// Get next shape
 		var next = this._board.bag.peekAt(2), self = this;
@@ -169,6 +171,10 @@ class Interface {
 		}, 1000);
 	}
 
+	/**
+	 * Inserts a shape to the bottom of the next shapes queue.
+	 * @param {Shape} shape  the shape to be inserted.
+	 */
 	addNextShape(shape){
 		var $shape = $("<span>");
 
@@ -206,14 +212,6 @@ class Interface {
 		}, 400);
 	}
 
-	setScore(score){
-		$("#score-count").text(score);
-	}
-
-	setLevel(level){
-		$("#level-count").text(level);
-	}
-
 	/**
 	 * Stops the game.
 	 */
@@ -221,6 +219,42 @@ class Interface {
 		clearTimeout(this._timeout);
 		this.pace = 0;
 		$("#death").fadeIn(200);
+	}
+
+	/**
+	 * Returns the current pace of the game
+	 * @return {int}  the step coefficient determining the
+	 *                    current pace. Bigger is faster.
+	 */
+	get pace(){
+		return this._pace;	
+	}
+
+	/**
+	 * Sets a new pace for the game.
+	 * @param  {int} p  the new pace.
+	 */
+	set pace(p){
+		if(this._pace == p) return;
+		this._pace = p;
+
+		this.enqueue();
+	}
+
+	/**
+	 * Sets the current score displayed to the user.
+	 * @param  {int} score  the current score.
+	 */
+	set score(score){
+		$("#score-count").text(score);
+	}
+
+	/**
+	 * Sets the current level displayed to the user.
+	 * @param  {int} level  the current level.
+	 */
+	set level(level){
+		$("#level-count").text(level);
 	}
 };
 

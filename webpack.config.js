@@ -29,11 +29,10 @@ module.exports = {
 		//includePaths: [path.resolve(__dirname, "./styles")]
 	},
 	plugins: [
-		// new webpack.optimize.UglifyJsPlugin({minimize: true}),
+		new webpack.optimize.UglifyJsPlugin({minimize: true}),
 		new BowerWebpackPlugin(),
 		new webpack.ProvidePlugin({
-			$: "jquery",
-			_: "underscore"
+			$: "jquery"
 		})
 	]
 };

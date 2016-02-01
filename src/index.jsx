@@ -1,4 +1,9 @@
-// Index
+/**
+ *  Tetris
+ *  A modern implementation of the classic.
+ *  JCOC611 2016.
+ *  MIT License, see LICENSE.
+ */
 require("!style!css!sass!./style.scss");
 
 import Interface from './Interface.jsx';
@@ -10,3 +15,5 @@ $(function(){
 	var inter = new Interface(board);
 	inter.start();
 });
+
+// TFIN

@@ -84,7 +84,7 @@ class Board extends Emitter {
 				if(cell.isEmpty()) continue;
 				if(cell.shape == this._ghostShape) continue;
 				
-				if(this.isActiveShape(cell.shape)){
+				if(this.isFalling(cell.shape)){
 					this.move(cell.shape, "down");
 					flag = false;
 				}else cell.shape.resolve();
@@ -103,6 +103,11 @@ class Board extends Emitter {
 		this.cells.unresolve();
 	}
 
+	/**
+	 * Evaluates the next state of the board after
+	 * computing gravity, lock timeouts, and inserting new
+	 * active shapes if required.
+	 */
 	step(){
 		// Gravity
 		this.unresolve();
@@ -111,7 +116,7 @@ class Board extends Emitter {
 		// Is there an active shape that is falling?
 		var isActiveFalling = (
 			this.activeShape 
-			&& this.isActiveShape(this.activeShape)
+			&& this.isFalling(this.activeShape)
 		);
 
 		// If active shape has touched ground, start lock timeout
@@ -121,16 +126,16 @@ class Board extends Emitter {
 			&& !isActiveFalling) this.resetActiveLock();
 		else if(isActiveFalling) this.clearActiveLock();
 
-
-		if(!this.activeShape){
-			// Since there is no active shape, add a new one.
-			this.insertShape();
-		}
+		// If there is no active shape, add a new one.
+		if(!this.activeShape) this.insertShape();
 	}
 
 	/**
 	 * Returns the cell at the given coordinates.
-	 * Negative coordinates correspond to the shape queue.
+	 * 
+	 * Note: Negative coordinates correspond to the shape queue,
+	 * 	and positive coordinates to the board (visible) cells.
+	 * 
 	 * @param  {int} x The x coordinate of the cell to retrieve.
 	 * @param  {int} y The y coordinate of the cell to retrieve.
 	 * @return {Cell}   The cell found at such coordinate,
@@ -141,17 +146,16 @@ class Board extends Emitter {
 		else return this.cells.get(x, y);
 	}
 
+	/**
+	 * Sets the value of a cell located at the given coordinates.
+	 * 
+	 * @param {int} x    The x coordinate of the cell to modify.
+	 * @param {int} y    The y coordinate of the cell to modify.
+	 * @param {Cell} cell The new value of this cell.
+	 */
 	set(x, y, cell){
-		if(y < 0) return this.queue.set(
-			x,
-			this.queue.height + y,
-			cell
-		);
-		else return this.cells.set(
-			x,
-			y,
-			cell
-		);
+		if(y < 0) return this.queue.set(x, this.queue.height + y,	cell);
+		else return this.cells.set(x, y, cell);
 	}
 
 	insertShape(){
@@ -206,18 +210,18 @@ class Board extends Emitter {
 			// Check bounds
 			// Left bound
 			if(cell.x < 0){
-				if(!this.move(old, "right", true)) return this.drawShape(old);;
+				if(!this.move(old, "right", true)) return this.drawShape(old);
 			}
 
 			// Right bound
 			if(cell.x >= this.width){
-				if(!this.move(old, "left", true)) return this.drawShape(old);;
+				if(!this.move(old, "left", true)) return this.drawShape(old);
 			}
 
 			// Bottom bound
 			if(cell.y >= this.height){
 				shape.resolve();
-				return this.drawShape(old);;
+				return this.drawShape(old);
 			}
 		}
 
@@ -230,16 +234,17 @@ class Board extends Emitter {
 
 	/**
 	 * Handles the mutation of a shape.
-	 * @param  {Shape} shape The shape that changed.
-	 * @param  {int} ox  The original x coordinate of the shape.
-	 * @param  {int} oy  The original y coordinate of the shape.
-	 * @param  {int} nx  The new x coordinate of the shape.
-	 * @param  {int} ny  The new y coordinate of the shape.
+	 *
+	 * Note: the old shape is obtained by cloning the new shape
+	 * 	before any modification is made.
+	 * @param  {Shape} old                 The shape before being changed.
+	 * @param  {Shape} newShape  The shape after being changed.
 	 */
 	shapeChanged(old, newShape){
 		// Ignore ghost
 		if(newShape == this._ghostShape) return;
 
+		// Redraw shape
 		this.deleteShape(old);
 		this.drawShape(newShape);
 
@@ -342,7 +347,7 @@ class Board extends Emitter {
 	 * @return {Boolean} true if there is nothing preventing
 	 * the given shape from falling. False otherwise.
 	 */
-	isActiveShape(shape){
+	isFalling(shape){
 		if(!shape) return false;
 
 		for(let cell of shape.cells){
@@ -463,10 +468,7 @@ class Board extends Emitter {
 				var cell = this.cells.get(x, y);
 
 				if(cell && (!cell.shape || cell.shape == this._ghostShape)) cell = null;
-				if(cell){
-					cell.shape = shape;
-					//cell.move(x, y); // Fixes some bugs
-				}
+				if(cell) cell.shape = shape;
 
 				shape.cells.set(
 					x, y - start, cell
@@ -507,14 +509,13 @@ class Board extends Emitter {
 			this.level = lvl;
 			this.emit("level:change", this.level);
 		}
-
 	}
 
 	deactivateShape(){
 		if(this._activeShape && this._activeShape.y < 0){
 			this.emit("death");
 		}
-		if(this._activeShape && this.isActiveShape(this._activeShape)){
+		if(this._activeShape && this.isFalling(this._activeShape)){
 			return this.clearActiveLock();
 		}
 		// Undraw/delete ghost
@@ -548,15 +549,25 @@ class Board extends Emitter {
 
 	rotate(){
 		if(!this.activeShape) return;
+
 		this.activeShape.rotate();
 		if(this.lockTimeout !== null) this.resetActiveLock();
 		this.emit("change");
 	}
 
+	/**
+	 * Returns the current score.
+	 * @return {int} The gamer score.
+	 */
 	get score(){
 		return this._score;
 	}
 
+	/**
+	 * Sets the current score and emits an event
+	 * notifying observers of the change.
+	 * @param  {int} s  the new score value.
+	 */
 	set score(s){
 		this._score = s;
 		this.emit("score:change", s);

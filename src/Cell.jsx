@@ -55,6 +55,12 @@ class Cell {
 		return this;
 	}
 
+	/**
+	 * Returns a copy of this cell.
+	 * @param  {shape} newShape  an optional reference to a new shape which the
+	 *                           copy of this cell should belong to.
+	 * @return {Cell}          the copy of this cell
+	 */
 	clone(newShape){
 		var newCell = new Cell(this.x, this.y);
 

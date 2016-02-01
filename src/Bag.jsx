@@ -37,7 +37,7 @@ class Bag {
 	 * Precondition: amount is at most this.min.
 	 * 
 	 * @param  {int} amount the number of shapes to peek at.
-	 * @return {Shape[]}      	an array of shapes which will
+	 * @return {Shape[]}      an array of shapes which will
 	 * come out of the bag, in the order in which they will
 	 * be grabbed.
 	 */
@@ -53,6 +53,13 @@ class Bag {
 		return peekShapes;
 	}
 
+	/**
+	 * Returns the shape that will be taken out of the bag
+	 * after a certain number of grabs.
+	 * @param  {int} position the number of shapes before this one
+	 *                        will come out.
+	 * @return {Shape}   the shape at such position.
+	 */
 	peekAt(position){
 		// 0-base
 		return this.queue[this.queue.length - 1 - position];

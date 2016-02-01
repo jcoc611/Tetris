@@ -78,3 +78,7 @@ export var LOCK_TIMEOUT = 300;
 export var STEP_TIMEOUT = 600;
 export var STEP_FAST_TIMEOUT = 80;
 
+// Paces
+export var PACE_NORMAL = 1;
+export var PACE_FAST = 10;
+

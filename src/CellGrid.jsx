@@ -24,16 +24,7 @@ class CellGrid {
 		if(!row) return null;
 		return row[x] || null;
 	}
-
-	/**
-	 * Replaces the first row of this grid with row.
-	 * @param {Cell[]} row an array of cells to be
-	 *                     inserted as the first row of this grid.
-	 */
-	addRow(row){
-		this.cells[0] = _.clone(row);
-	}
-
+	
 	/**
 	 * Replaces the contents of a cell with given coordinates.
 	 * @param {int} x  The x coordinate of the cell to replace.
@@ -44,27 +35,6 @@ class CellGrid {
 		//if(!cell instanceof Cell) throw new Error("Must be a cell!");
 		if(!this.cells[y]) this.cells[y] = [];
 		this.cells[y][x] = cell;
-	}
-	
-	/**
-	 * Shifts this grid down by one row, deleting the last row
-	 * and adding an empty one on top.
-	 * @return {CellGrid} single row grid with the last row,
-	 * which was deleted.
-	 */
-	shift(){
-		var last = this.last();
-
-		this.cells.pop();
-
-		var nl = [];
-		for(var z = 0; z < this.width; z++){
-			nl.push(new Cell());
-		}
-
-		this.cells.shift(nl);
-
-		return last;
 	}
 
 	/**
@@ -77,6 +47,9 @@ class CellGrid {
 		}
 	}
 
+	/**
+	 * Set all the non-empty cells of this grid as unresolved.
+	 */
 	unresolve(){
 		for(let cell of this){
 			cell.resolved = (cell.isEmpty());
@@ -88,42 +61,6 @@ class CellGrid {
 	 */
 	clear(){
 		this.cells = [];
-	}
-
-	/**
-	 * Returns the cell above a given cell.
-	 * @param  {Cell} cell A cell.
-	 * @return {Cell} The cell above the given cell.
-	 */
-	above(cell){
-		return this.get(cell.x, cell.y - 1);
-	}
-
-	/**
-	 * Returns the cell below a given cell.
-	 * @param  {Cell} cell A cell.
-	 * @return {Cell} The cell below the given cell.
-	 */
-	below(cell){
-		return this.get(cell.x, cell.y + 1);
-	}
-
-	/**
-	 * Returns the cell left of a given cell.
-	 * @param  {Cell} cell A cell.
-	 * @return {Cell} The cell left of the given cell.
-	 */
-	left(cell){
-		return this.get(cell.x - 1, cell.y);
-	}
-
-	/**
-	 * Returns the cell right of a given cell.
-	 * @param  {Cell} cell A cell.
-	 * @return {Cell} The cell right of the given cell.
-	 */
-	right(cell){
-		return this.get(cell.x + 1, cell.y);
 	}
 
 	/**
@@ -151,23 +88,6 @@ class CellGrid {
 			if(cell.isEmpty()) return false;
 		}
 		return true;
-	}
-
-	/**
-	 * Returns the last row of this grid.
-	 * @return {CellGrid} A new cell grid with the
-	 * same contents as the last row of this grid.
-	 */
-	last(){
-		var c = [];
-		
-		if(this.cells.length)
-			c = this.cells[this.cells.length - 1];
-		
-		var grid = new CellGrid();
-		grid.addRow(c);
-
-		return grid;
 	}
 
 	/**

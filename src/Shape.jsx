@@ -120,51 +120,6 @@ class Shape extends Emitter {
 		this.emit("rotate", this, rotated);
 	}
 
-	deleteLine(line){
-		// Split shape into two or less shapes
-		var rline = line - this.y;
-
-		// Above
-		if(rline > 0){
-			var aboveShape = new Shape(this.color);
-			aboveShape.x = this.x;
-			aboveShape.y = this.y;
-
-			// Copy all cells up to, excluding rline
-			for(let y = 0; y < rline; y++){
-				for(let x = 0; x < this.width; x++){
-					var cell = this.cells.get(x, y);
-
-					if(cell) cell.shape = aboveShape;
-
-					aboveShape.cells.set(
-						x, y, cell
-					);
-				}
-			}
-		}
-
-		// Below
-		if(rline < this.height){
-			var belowShape = new Shape(this.color);
-			belowShape.x = this.x;
-			belowShape.y = line + 1;
-
-			// Copy all cells up to, excluding rline
-			for(let y = rline + 1; y < this.height; y++){
-				for(let x = 0; x < this.width; x++){
-					var cell = this.cells.get(x, y);
-
-					if(cell) cell.shape = belowShape;
-
-					belowShape.cells.set(
-						x, y, cell
-					);
-				}
-			}
-		}
-	}
-
 	/**
 	 * Returns the height of this shape.
 	 * @return {int} the height of this shape.
@@ -181,11 +136,18 @@ class Shape extends Emitter {
 		return this.cells.width; 
 	}
 
-
+	/**
+	 * Returns the color of this shape.
+	 * @return {string}  The hex color of this shape.
+	 */
 	get color(){
 		return this._color;
 	}
 
+	/**
+	 * Updates the color of this shape and all its cells.
+	 * @param  {string} color  the new hex color for this shape.
+	 */
 	set color(color){
 		this._color = color;
 		for(let cell of this.cells){
