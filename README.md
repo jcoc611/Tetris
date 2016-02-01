@@ -12,4 +12,4 @@ This project is written in ES6 JavaScript, packed by Babel.js + Webpack, produci
 
 ## License
 
-All contents of this repository are licensed under the MIT License, see `LICENSE.md`. This code is an unofficial implementation of Tetris, and is not supported by, or affiliated with, Tetris Holding or The Tetris Company.
+All contents of this repository are licensed under the MIT License, see `LICENSE`. This code is an unofficial implementation of Tetris, and is not supported by, or affiliated with, Tetris Holding or The Tetris Company.
