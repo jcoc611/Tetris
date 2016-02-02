@@ -71,8 +71,9 @@ class Bag {
 	replenish(){
 		// Clone shapes
 		var shapes = [];
-		for(let z = 0; z < SHAPES.length; z++){
-			var sh = Shape.fromScheme(SHAPES[z].scheme, SHAPES[z].color);
+		for(let shapeMeta of SHAPES){
+			var sh = Shape.fromScheme(shapeMeta.scheme, shapeMeta.color);
+			sh.move(shapeMeta.x, shapeMeta.y);
 			shapes.push(sh);
 		}
 

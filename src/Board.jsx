@@ -165,7 +165,6 @@ class Board extends Emitter {
 
 		var sh = this.bag.grab();
 
-		sh.move(0, -sh.height);
 		this._activeShape = sh;
 
 		this.addShape(sh);

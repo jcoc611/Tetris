@@ -1,7 +1,7 @@
 export var DEFAULT_COLOR = '#EEEEEE';
 export var GHOST_COLOR = '#CCCCCC';
 
-// Shapes - 2d arrays [y][x] of bool, and their colors.
+// Shapes - 2d arrays [y][x] of bool, their spawn locations, and their colors.
 export var SHAPES = [
 	{		
 		scheme: [
@@ -10,6 +10,8 @@ export var SHAPES = [
 			[0, 0, 0, 0],
 			[0, 0, 0, 0]
 		],
+		x: 3,
+		y: -1,
 		// Cyan
 		color: "#65B8D8"
 	},
@@ -19,6 +21,8 @@ export var SHAPES = [
 			[1, 1, 1],
 			[0, 0, 0]
 		],
+		x: 1,
+		y: -2,
 		// Blue
 		color: "#6578D8"
 	},
@@ -28,6 +32,8 @@ export var SHAPES = [
 			[1, 1, 1],
 			[0, 0, 0]
 		],
+		x: 1,
+		y: -2,
 		// Orange
 		color: "#D88A65"
 	},
@@ -36,6 +42,8 @@ export var SHAPES = [
 			[1, 1],
 			[1, 1]
 		],
+		x: 4,
+		y: -2,
 		// Yellow
 		color: "#D8CF65"
 	},
@@ -45,6 +53,8 @@ export var SHAPES = [
 			[1, 1, 0],
 			[0, 0, 0]
 		],
+		x: 1,
+		y: -2,
 		// Green
 		color: "#65D87E"
 	},
@@ -54,6 +64,8 @@ export var SHAPES = [
 			[0, 1, 1],
 			[0, 0, 0]
 		],
+		x: 1,
+		y: -2,
 		// Red
 		color: "#D86565"
 	},
@@ -62,6 +74,8 @@ export var SHAPES = [
 			[0, 1, 0],
 			[1, 1, 1]
 		],
+		x: 1,
+		y: -2,
 		// Purple
 		color: "#AC65D8"
 	}
