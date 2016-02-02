@@ -11,6 +11,14 @@ class CellGrid {
 	constructor(){
 		this.cells = [];
 	}
+
+	static get CLOCKWISE(){
+		return 1;
+	}
+
+	static get COUNTER_CLOCKWISE(){
+		return 2;
+	}
 	
 	/**
 	 * Returns the cell at a given position.
@@ -93,7 +101,7 @@ class CellGrid {
 	/**
 	 * Rotates this grid in a clockwise direction.
 	 */
-	rotate(){
+	rotate(direction){
 		var newCells = [];
 
 		// Cant rotate emptiness
@@ -102,19 +110,40 @@ class CellGrid {
 		// The origin x and y
 		var ox, oy;
 
-		for(let i = 0; i < this.width; i++){
-			newCells[i] = [];
+		console.log(direction == CellGrid.CLOCKWISE);
+		if(direction == CellGrid.CLOCKWISE){
+			for(let i = 0; i < this.width; i++){
+				newCells[i] = [];
 
-			for(let k = this.height - 1; k >= 0; k--){
-				var cell = this.get(i, k);
-				if(cell){
-					if(!ox){
-						ox = cell.shape.x;
-						oy = cell.shape.y;
+				for(let k = this.height - 1; k >= 0; k--){
+					var cell = this.get(i, k);
+					if(cell){
+						if(!ox){
+							ox = cell.shape.x;
+							oy = cell.shape.y;
+						}
+						cell.move(ox - k + this.height - 1, oy + i);
 					}
-					cell.move(ox - k + this.height - 1, oy + i);
+					newCells[i].push(cell);
 				}
-				newCells[i].push(cell);
+			}
+		}else{
+			for(let i = this.width - 1; i >= 0; i--){
+				var y = this.width - 1 - i;
+
+				newCells[y] = [];
+
+			 	for(let k = 0; k < this.height; k++){
+					var cell = this.get(i, k);
+					if(cell){
+						if(!ox){
+							ox = cell.shape.x;
+							oy = cell.shape.y;
+						}
+			 			cell.move(ox + k, oy + y);
+			 		}
+			 		newCells[y].push(cell);
+			 	}
 			}
 		}
 

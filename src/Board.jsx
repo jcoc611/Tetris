@@ -51,7 +51,8 @@ class Board extends Emitter {
 		this.on("left", this.moveLeft);
 		this.on("right", this.moveRight);
 		this.on("down", this.step);
-		this.on("up", this.rotate);
+		this.on("up", this.rotateClockwise);
+		this.on("z", this.rotateCounterclockwise);
 
 		this.on("add", this.moveBottom);
 
@@ -194,7 +195,7 @@ class Board extends Emitter {
 		}
 	}
 
-	shapeRotated(old, rotated){
+	shapeRotated(old, rotated, direction){
 		this.deleteShape(old);
 
 		// Check collisions
@@ -225,7 +226,7 @@ class Board extends Emitter {
 		}
 
 		// TODO: think of way to prevent rotating twice
-		old.cells.rotate();
+		old.cells.rotate(direction);
 		this.drawShape(old);
 
 		this.updateGhost();
@@ -546,12 +547,33 @@ class Board extends Emitter {
 		this.insertShape();
 	}
 
-	rotate(){
+	/**
+	 * Rotates the currently active shape in a given direction. Emits a change event,
+	 * and resets the lock timeout of the active shape.
+	 * 
+	 * @param  {int} direction  the direction to rotate the shape in.
+	 *                          See the constants in CellGrid.
+	 */
+	rotate(direction){
 		if(!this.activeShape) return;
 
-		this.activeShape.rotate();
+		this.activeShape.rotate(direction);
 		if(this.lockTimeout !== null) this.resetActiveLock();
 		this.emit("change");
+	}
+
+	/**
+	 * Rotates the currently active shape in clockwise direction.
+	 */
+	rotateClockwise(){
+		this.rotate(CellGrid.CLOCKWISE);
+	}
+
+	/**
+	 * Rotates the currently active shape in counter-clockwise direction.
+	 */
+	rotateCounterclockwise(){
+		this.rotate(CellGrid.COUNTER_CLOCKWISE);
 	}
 
 	/**

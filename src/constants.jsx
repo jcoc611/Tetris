@@ -1,6 +1,21 @@
 export var DEFAULT_COLOR = '#EEEEEE';
 export var GHOST_COLOR = '#CCCCCC';
 
+// Dimensions
+export var CELL_SIZE = 20;
+export var CELL_MARGIN = 1;
+export var BOARD_WIDTH = 10;
+export var BOARD_HEIGHT = 20;
+
+// Times
+export var LOCK_TIMEOUT = 300;
+export var STEP_TIMEOUT = 600;
+export var STEP_FAST_TIMEOUT = 80;
+
+// Paces
+export var PACE_NORMAL = 1;
+export var PACE_FAST = 10;
+
 // Shapes - 2d arrays [y][x] of bool, their spawn locations, and their colors.
 export var SHAPES = [
 	{		
@@ -80,19 +95,3 @@ export var SHAPES = [
 		color: "#AC65D8"
 	}
 ];
-
-// Dimensions
-export var CELL_SIZE = 20;
-export var CELL_MARGIN = 1;
-export var BOARD_WIDTH = 10;
-export var BOARD_HEIGHT = 20;
-
-// Times
-export var LOCK_TIMEOUT = 300;
-export var STEP_TIMEOUT = 600;
-export var STEP_FAST_TIMEOUT = 80;
-
-// Paces
-export var PACE_NORMAL = 1;
-export var PACE_FAST = 10;
-

@@ -84,6 +84,10 @@ class Interface {
 				case 40:
 					self.pace = PACE_NORMAL;
 					break;
+
+				case 90:
+					board.emit("z");
+					break;
 			}
 		});
 
