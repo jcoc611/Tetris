@@ -6,6 +6,7 @@
  * @preserve
  */
 require("!style!css!sass!./style.scss");
+require("jquery-keyrepeat");
 
 import Interface from './Interface.jsx';
 import Board from './Board.jsx';

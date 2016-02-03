@@ -2,7 +2,9 @@ import { 	CELL_SIZE,
 		CELL_MARGIN,
 		STEP_TIMEOUT,
 		PACE_NORMAL,
-		PACE_FAST
+		PACE_FAST,
+		DAS_DELAY,
+		DAS_INTERVAL
 	} from './constants.jsx';
 import easeOutBounce from './jquery.easing.jsx';
 
@@ -59,7 +61,7 @@ class Interface {
 			this.addNextShape(shape);
 		}
 
-		$(document).on("keydown",function(e){
+		$(document).keyrepeat(function(e){
 			switch(e.which){
 				case 37:
 					board.emit("left");
@@ -67,6 +69,14 @@ class Interface {
 				case 39:
 					board.emit("right");
 					break;
+			}
+		},{
+			delay: DAS_DELAY,
+			interval: function(e, count){
+				return DAS_INTERVAL; // might change in the future	
+			}
+		}).on("keydown",function(e){
+			switch(e.which){
 				case 40:
 					self.pace = PACE_FAST;
 					break;

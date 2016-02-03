@@ -16,6 +16,10 @@ export var STEP_FAST_TIMEOUT = 80;
 export var PACE_NORMAL = 1;
 export var PACE_FAST = 10;
 
+// Key Repeat (ms)
+export var DAS_INTERVAL = 30;
+export var DAS_DELAY = 200;
+
 // Shapes - 2d arrays [y][x] of bool, their spawn locations, and their colors.
 export var SHAPES = [
 	{		
